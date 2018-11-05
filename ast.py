@@ -151,3 +151,19 @@ class astree():
 
 def build(e):
     pass
+
+a = astree()
+a.add("2")
+a.add("*")
+
+b = astree()
+b.add("1")
+b.add("+")
+b.add("3")
+
+a.add(b.root)
+a.add("*")
+a.add("3")
+a.add("+")
+a.add("2")
+print(a.evaluate())
