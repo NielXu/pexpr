@@ -149,21 +149,83 @@ class astree():
         return t[sym1] > t[sym2]
 
 
+def evaluate(node):
+    if node is None:
+        return 0
+    if not is_symbol(node.sym):
+        return float(node.sym)
+    left = evaluate(node.left)
+    right = evaluate(node.right)
+    # check which operation to apply 
+    if node.sym == '+': 
+        return left + right  
+    elif node.sym == '-': 
+        return left - right 
+    elif node.sym == '*': 
+        return left * right
+    elif node.sym == "^":
+        return left ** right 
+    else:
+        return left / right
+
+def is_symbol(s):
+    return s in "+-*/^"
+
+
 def build(e):
-    pass
+    e = e.replace(" ","")
+    ops, val = [], []
+    digit = "0123456789"
+    symbol = "+-*/^"
+    index = 0
+    while index < len(e):
+        token = e[index]
+        if token in digit:
+            s = ""
+            while index < len(e) and e[index] in digit:
+                s += e[index]
+                index += 1
+            val.append(s)
+            index -= 1
+        elif token == "(":
+            ops.append(token)
+        elif token == ")":
+            while ops[-1] != "(":
+                val.append(operate(ops.pop(), val.pop(), val.pop()))
+            ops.pop()
+        elif token in symbol:
+            while len(ops) != 0 and ops[-1] != "(":
+                val.append(operate(ops.pop(), val.pop(), val.pop()))
+            ops.append(token)
+        index += 1
+    while len(ops) > 0:
+        val.append(operate(ops.pop(), val.pop(), val.pop()))
+    return val.pop()
 
+def operate(op, n1, n2):
+        a = astree()
+        a.add(n2)
+        a.add(op)
+        a.add(n1)
+        return a.root
+
+# a = astree()
+# a.add("2")
+# a.add("*")
+
+# b = astree()
+# b.add("1")
+# b.add("+")
+# b.add("3")
+
+# a.add(b.root)
+# a.add("*")
+# a.add("3")
+# a.add("+")
+# a.add("2")
+# print(a.evaluate())
+
+t = build("  2   * (3 +     1) *(10    -15)")
 a = astree()
-a.add("2")
-a.add("*")
-
-b = astree()
-b.add("1")
-b.add("+")
-b.add("3")
-
-a.add(b.root)
-a.add("*")
-a.add("3")
-a.add("+")
-a.add("2")
+a.add(t)
 print(a.evaluate())
