@@ -1,3 +1,13 @@
+"""
+This module contains `astree` which can add node onto. Abstract Syntax Tree
+only supports basic operators. Use `build` to generate a correct AST by a
+math expression.
+"""
+
+
+from queue import Queue
+
+
 class node():
     def __init__(self, sym, parent, left=None, right=None):
         self.sym = sym
@@ -7,17 +17,25 @@ class node():
 
 
 class astree():
+    """
+    Abstract Syntax Tree that can add node onto. Please
+    notice that this AST does not support any operators except for:
+    +, -, *, /, ^. To generate a tree with more options, please
+    use `build` method.
+    """
     def __init__(self):
         self.root = None
         self.cur = None
     
     def add(self, sym):
-        if self.root is None:
+        if type(sym) == node:
+            self._add_node(sym)
+        elif self.root is None:
             self.root = node(sym, None)
             self.cur = self.root
         else:
             if self.symbol(sym):
-                if self.symbol(self.root.sym) and self.order(sym, self.root.sym) == 1:
+                if self.symbol(self.root.sym) and self.precedence(sym, self.root.sym):
                     n = node(sym, self.cur.parent)
                     self.cur.parent.right = n
                     n.left = self.cur
@@ -36,7 +54,25 @@ class astree():
                     temp.right = node(sym, temp)
                     self.cur = temp.right
     
+    def _add_node(self, n):
+        if self.root is None:
+            self.root = n
+            self.cur = self.root
+        else:
+            if self.root.right is None:
+                self.root.right = n
+                self.cur = self.root.right
+            else:
+                temp = self.root
+                while temp.right is not None:
+                    temp = temp.right
+                temp.right = n
+                self.cur = temp.right
+    
     def evaluate(self):
+        """
+        Evaluate the result of the AST, and return the value as `float`.
+        """
         def eva(node):
             if node is None:
                 return 0
@@ -50,10 +86,25 @@ class astree():
             elif node.sym == '-': 
                 return left - right 
             elif node.sym == '*': 
-                return left * right 
+                return left * right
+            elif node.sym == "^":
+                return left ** right 
             else:
                 return left / right
         return eva(self.root)
+    
+    def bfs(self):
+        q = Queue()
+        q.put(self.root)
+        s = ""
+        while q.qsize() > 0:
+            node = q.get()
+            s += node.sym
+            if node.left is not None:
+                q.put(node.left)
+            if node.right is not None:
+                q.put(node.right)
+        print(s)
     
     def inorder(self):
         def travel(node):
@@ -83,20 +134,20 @@ class astree():
         travel(self.root)
     
     def symbol(self, sym):
-        return sym in ["+", "-", "*", "/"]
+        return sym in ["+", "-", "*", "/", "^"]
     
-    def order(self, sym1, sym2):
+    def precedence(self, sym1, sym2):
         """
-        Return 1 if symbol_1 > symbol_2
-        Return 0 if symbol_1 = symbol_2
-        Return -1 if synbol_1 < symbol_2
+        Return True if symbol 1 has high precedence than symbol2,
+        False otherwise
         """
-        t = {"+":1, "-":1, "*":2, "/":2}
-        return t[sym1] - t[sym2]
+        t = {"+":1,
+             "-":1,
+             "*":2,
+             "/":2,
+             "^":3}
+        return t[sym1] > t[sym2]
 
-s = "1*2/3"
-a = astree()
-for i in s:
-    a.add(i)
 
-print(a.evaluate())
+def build(e):
+    pass
