@@ -57,41 +57,21 @@ class astree():
     def _add_node(self, n):
         if self.root is None:
             self.root = n
-            self.cur = self.root
         else:
             if self.root.right is None:
                 self.root.right = n
-                self.cur = self.root.right
             else:
                 temp = self.root
                 while temp.right is not None:
                     temp = temp.right
                 temp.right = n
-                self.cur = temp.right
+        self.cur = self.root.right
     
     def evaluate(self):
         """
         Evaluate the result of the AST, and return the value as `float`.
         """
-        def eva(node):
-            if node is None:
-                return 0
-            if not self.symbol(node.sym):
-                return float(node.sym)
-            left = eva(node.left)
-            right = eva(node.right)
-            # check which operation to apply 
-            if node.sym == '+': 
-                return left + right  
-            elif node.sym == '-': 
-                return left - right 
-            elif node.sym == '*': 
-                return left * right
-            elif node.sym == "^":
-                return left ** right 
-            else:
-                return left / right
-        return eva(self.root)
+        return evaluate(self.root)
     
     def bfs(self):
         q = Queue()
@@ -203,29 +183,13 @@ def build(e):
     return val.pop()
 
 def operate(op, n1, n2):
-        a = astree()
-        a.add(n2)
-        a.add(op)
-        a.add(n1)
-        return a.root
+    a = astree()
+    a.add(n2)
+    a.add(op)
+    a.add(n1)
+    return a.root
 
-# a = astree()
-# a.add("2")
-# a.add("*")
-
-# b = astree()
-# b.add("1")
-# b.add("+")
-# b.add("3")
-
-# a.add(b.root)
-# a.add("*")
-# a.add("3")
-# a.add("+")
-# a.add("2")
-# print(a.evaluate())
-
-t = build("  2   * (3 +     1) *(10    -15)")
+t = build("2^((2*((1+3)-4*(2+1)))/(6^2))")
 a = astree()
 a.add(t)
 print(a.evaluate())
