@@ -1,3 +1,8 @@
+"""
+This module contains functions for expression operations.
+"""
+
+
 import collections
 
 
@@ -18,6 +23,11 @@ _OPS = {
 
 
 def has_precedence(a, b):
+    """Compare two opeartors a and b.
+    1. If b is right associativity and has lower precedence than a, return True
+    2. If b is left associativity and has lower or same precedence with a, return True
+    3. Otherwise, return False
+    """
     return ((_OPS[b].associativity == _RIGHT and
              _OPS[a].precedence > _OPS[b].precedence) or
             (_OPS[b].associativity == _LEFT and
@@ -25,7 +35,9 @@ def has_precedence(a, b):
 
 
 def postfix(e):
-    "Convert infix expression to postfix expression"
+    """Convert infix expression to postfix expression and return
+    a list that contains all the tokens in postfix order.
+    """
     index = 0
     q = []
     op = []
@@ -58,8 +70,14 @@ def postfix(e):
 
 
 def is_symbol(s):
+    """Return True if given str is a symbol, which means
+    it is in '+,-,*,/,^', False otherwise.
+    """
     return s in "+-*/^"
 
 
 def is_digit(s):
+    """Return True if given str is a digit, which means it
+    is in '0,1,2,3,4,5,6,7,8,9', False otherwise.
+    """
     return s in "1234567890"
