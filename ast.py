@@ -6,11 +6,12 @@ math expression.
 
 
 from queue import Queue
-import collections
+from expr import is_symbol, is_digit, postfix
 import sys
 
 
 class node():
+    "A node in the AST"
     def __init__(self, sym, parent=None, left=None, right=None):
         self.sym = sym
         self.left = left
@@ -63,7 +64,6 @@ class astree():
                         self.cur = self.cur.parent
                     self.cur.left = node(sym, self.cur)
 
-    
     def evaluate(self):
         """
         Evaluate the result of the AST, and return the value as `float`.
@@ -109,29 +109,6 @@ class astree():
                 print(node.sym, end=" ")
         print()
         travel(self.root)
-    
-    def symbol(self, sym):
-        return sym in ["+", "-", "*", "/", "^"]
-
-
-Op = collections.namedtuple('Op', [
-    'precedence',
-    'associativity'])
-
-RIGHT, LEFT = 0,1
-
-OPS = {
-    '^': Op(precedence=4, associativity=RIGHT),
-    '*': Op(precedence=3, associativity=LEFT),
-    '/': Op(precedence=3, associativity=LEFT),
-    '+': Op(precedence=2, associativity=LEFT),
-    '-': Op(precedence=2, associativity=LEFT)}
-
-def has_precedence(a, b):
-    return ((OPS[b].associativity == RIGHT and
-             OPS[a].precedence > OPS[b].precedence) or
-            (OPS[b].associativity == LEFT and
-             OPS[a].precedence >= OPS[b].precedence))
 
 
 def evaluate(node):
@@ -152,47 +129,6 @@ def evaluate(node):
         return left ** right 
     else:
         return left / right
-
-
-def is_symbol(s):
-    return s in "+-*/^"
-
-
-def is_digit(s):
-    return s in "1234567890"
-
-
-def postfix(e):
-    "Convert infix expression to postfix expression"
-    index = 0
-    q = []
-    op = []
-    while index < len(e):
-        token = e[index]
-        if is_digit(token):
-            d = ""
-            while index < len(e) and is_digit(e[index]):
-                d += e[index]
-                index += 1
-            q.append(d)
-            index -= 1
-        elif token == "(":
-            op.append(token)
-        elif is_symbol(token):
-            if len(op) > 0:
-                while len(op) > 0 and op[-1] != "(" and has_precedence(op[-1], token):
-                    q.append(op.pop())
-                op.append(token)
-            else:
-                op.append(token)
-        elif token == ")":
-            while len(op) > 0 and op[-1] != "(":
-                q.append(op.pop())
-            op.pop()
-        index += 1
-    while len(op) > 0:
-        q.append(op.pop())
-    return q
 
 
 def build(e):
