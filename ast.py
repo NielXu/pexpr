@@ -169,7 +169,6 @@ def postfix(e):
     op = []
     while index < len(e):
         token = e[index]
-        print(token)
         if is_digit(token):
             d = ""
             while index < len(e) and is_digit(e[index]):
@@ -209,5 +208,11 @@ def build(e):
     return ast
 
 
-e = "3^(1+2)/4+3*(6^(4-1))+99"
-print(build(e).evaluate())
+def main():
+    if len(sys.argv) > 0:
+        for e in sys.argv[1:]:
+            print(build(e).evaluate())
+
+
+if __name__ == '__main__':
+    main()
