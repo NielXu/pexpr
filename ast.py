@@ -7,6 +7,7 @@ math expression.
 
 from queue import Queue
 import collections
+import sys
 
 
 class node():
@@ -192,3 +193,25 @@ def postfix(e):
     while len(op) > 0:
         q.append(op.pop())
     return q
+
+
+def build(e):
+    """Build a `astree` by given INFIX expression. Infix
+    expression means expressions that placed operators
+    between numbers, such as `1+1`.
+    """
+    e = e.replace(" ", "")
+    p = postfix(e)
+    ast = astree()
+    while len(p) > 0:
+        ast.add(p.pop())
+    return ast
+
+
+def main():
+    if len(sys.argv) > 1:
+        for e in sys.argv[1:]:
+            print(build(e).evaluate())
+
+if __name__ == '__main__':
+    main()
