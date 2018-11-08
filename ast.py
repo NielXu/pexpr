@@ -6,66 +6,62 @@ math expression.
 
 
 from queue import Queue
+import collections
 
 
 class node():
-    def __init__(self, sym, parent, left=None, right=None):
+    def __init__(self, sym, parent=None, left=None, right=None):
         self.sym = sym
-        self.parent = parent
         self.left = left
+        self.parent = parent
         self.right = right
 
 
 class astree():
     """
-    Abstract Syntax Tree that can add node onto. Please
-    notice that this AST does not support any operators except for:
-    +, -, *, /, ^. To generate a tree with more options, please
-    use `build` method.
+    Abstract Syntax Tree is a tree representation of an expression.
+    Please notice that this tree only accpets basic operators +,-,*,/
+    and the nodes will be inserted in POSTFIX order.
+
+    If one wants to construct AST with infix expression, please convert
+    it using `postfix` method first, and then pop elements from the stack
+    in order to add them into the tree. Or use `build` directly, which
+    supports more functions such as parathensis and so on.
+    
+    After constructing the tree completely, one can use `preorder`, `inorder`
+    and `postorder` to convert the expression to prefix, infix and postfix format.
     """
     def __init__(self):
         self.root = None
         self.cur = None
     
     def add(self, sym):
-        if type(sym) == node:
-            self._add_node(sym)
-        elif self.root is None:
+        if self.root is None:
             self.root = node(sym, None)
             self.cur = self.root
         else:
-            if self.symbol(sym):
-                if self.symbol(self.root.sym) and self.precedence(sym, self.root.sym):
-                    n = node(sym, self.cur.parent)
-                    self.cur.parent.right = n
-                    n.left = self.cur
+            if is_symbol(sym):
+                if self.cur.right is None:
+                    self.cur.right = node(sym, self.cur)
+                    self.cur = self.cur.right
+                elif self.cur.left is None:
+                    self.cur.left = node(sym, self.cur)
+                    self.cur = self.cur.left
                 else:
-                    n = node(sym, None)
-                    n.left = self.root
-                    self.root = n
+                    while self.cur.left is not None:
+                        self.cur = self.cur.parent
+                    self.cur.left = node(sym, self.cur)
+                    self.cur = self.cur.left
             else:
-                if self.root.right is None:
-                    self.root.right = node(sym, self.root)
-                    self.cur = self.root.right
+                if self.cur.right is None:
+                    self.cur.right = node(sym, self.cur)
+                elif self.cur.left is None:
+                    self.cur.left = node(sym, self.cur)
                 else:
-                    temp = self.root
-                    while temp.right is not None:
-                        temp = temp.right
-                    temp.right = node(sym, temp)
-                    self.cur = temp.right
-    
-    def _add_node(self, n):
-        if self.root is None:
-            self.root = n
-        else:
-            if self.root.right is None:
-                self.root.right = n
-            else:
-                temp = self.root
-                while temp.right is not None:
-                    temp = temp.right
-                temp.right = n
-        self.cur = self.root.right
+                    while self.cur.left is not None:
+                        self.cur = self.cur.parent
+                    self.cur.left = node(sym, self.cur)
+
     
     def evaluate(self):
         """
@@ -115,18 +111,26 @@ class astree():
     
     def symbol(self, sym):
         return sym in ["+", "-", "*", "/", "^"]
-    
-    def precedence(self, sym1, sym2):
-        """
-        Return True if symbol 1 has high precedence than symbol2,
-        False otherwise
-        """
-        t = {"+":1,
-             "-":1,
-             "*":2,
-             "/":2,
-             "^":3}
-        return t[sym1] > t[sym2]
+
+
+Op = collections.namedtuple('Op', [
+    'precedence',
+    'associativity'])
+
+RIGHT, LEFT = 0,1
+
+OPS = {
+    '^': Op(precedence=4, associativity=RIGHT),
+    '*': Op(precedence=3, associativity=LEFT),
+    '/': Op(precedence=3, associativity=LEFT),
+    '+': Op(precedence=2, associativity=LEFT),
+    '-': Op(precedence=2, associativity=LEFT)}
+
+def has_precedence(a, b):
+    return ((OPS[b].associativity == RIGHT and
+             OPS[a].precedence > OPS[b].precedence) or
+            (OPS[b].associativity == LEFT and
+             OPS[a].precedence >= OPS[b].precedence))
 
 
 def evaluate(node):
@@ -148,48 +152,43 @@ def evaluate(node):
     else:
         return left / right
 
+
 def is_symbol(s):
     return s in "+-*/^"
 
 
-def build(e):
-    e = e.replace(" ","")
-    ops, val = [], []
-    digit = "0123456789"
-    symbol = "+-*/^"
+def is_digit(s):
+    return s in "1234567890"
+
+
+def postfix(e):
+    "Convert infix expression to postfix expression"
     index = 0
+    q = []
+    op = []
     while index < len(e):
         token = e[index]
-        if token in digit:
-            s = ""
-            while index < len(e) and e[index] in digit:
-                s += e[index]
+        if is_digit(token):
+            d = ""
+            while index < len(e) and is_digit(e[index]):
+                d += e[index]
                 index += 1
-            val.append(s)
+            q.append(d)
             index -= 1
         elif token == "(":
-            ops.append(token)
+            op.append(token)
+        elif is_symbol(token):
+            if len(op) > 0:
+                while len(op) > 0 and op[-1] != "(" and has_precedence(op[-1], token):
+                    q.append(op.pop())
+                op.append(token)
+            else:
+                op.append(token)
         elif token == ")":
-            while ops[-1] != "(":
-                val.append(operate(ops.pop(), val.pop(), val.pop()))
-            ops.pop()
-        elif token in symbol:
-            while len(ops) != 0 and ops[-1] != "(":
-                val.append(operate(ops.pop(), val.pop(), val.pop()))
-            ops.append(token)
+            while len(op) > 0 and op[-1] != "(":
+                q.append(op.pop())
+            op.pop()
         index += 1
-    while len(ops) > 0:
-        val.append(operate(ops.pop(), val.pop(), val.pop()))
-    return val.pop()
-
-def operate(op, n1, n2):
-    a = astree()
-    a.add(n2)
-    a.add(op)
-    a.add(n1)
-    return a.root
-
-t = build("2^((2*((1+3)-4*(2+1)))/(6^2))")
-a = astree()
-a.add(t)
-print(a.evaluate())
+    while len(op) > 0:
+        q.append(op.pop())
+    return q
