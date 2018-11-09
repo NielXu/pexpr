@@ -87,14 +87,13 @@ def postfix(e):
     index = 0
     while index < len(tokens):
         token = tokens[index]
-        print(token)
         if token.is_num or token.is_dummy:
             q.append(token)
         if token.is_leftb:
             op.append(token)
         elif token.is_oper:
             if len(op) > 0:
-                while len(op) > 0 and op[-1].is_func or (op[-1].sym != "(" and has_precedence(op[-1].sym, token.sym)):
+                while len(op) > 0 and (op[-1].is_func or (op[-1].sym != "(" and has_precedence(op[-1].sym, token.sym))):
                     q.append(op.pop())
                 op.append(token)
             else:
@@ -199,6 +198,3 @@ def _match_regex(r, e):
         starts.append(m.start())
         ends.append(m.end())
     return starts, ends
-
-
-print(postfix("sin(max(2,3)/3*π)"))
