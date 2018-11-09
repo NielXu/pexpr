@@ -33,9 +33,9 @@ basic_opeartors_mapper = {
 
 
 function_mapper = {
-    "max(": lambda x,y : max(x, y),
-    "min(": lambda x,y : min(x, y),
-    "sin(": None
+    "max": lambda x,y : max(x, y),
+    "min": lambda x,y : min(x, y),
+    "sin": None
 }
 
 
@@ -177,3 +177,5 @@ def _match_regex(r, e):
         starts.append(m.start())
         ends.append(m.end())
     return starts, ends
+
+print(tokenize("sin(1+max(2,3*pi))"))
