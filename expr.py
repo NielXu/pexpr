@@ -4,6 +4,7 @@ This module contains functions for expression operations.
 
 
 import collections
+import re
 
 
 _Op = collections.namedtuple('Op', [
@@ -20,6 +21,22 @@ _OPS = {
     '/': _Op(precedence=3, associativity=_LEFT),
     '+': _Op(precedence=2, associativity=_LEFT),
     '-': _Op(precedence=2, associativity=_LEFT)}
+
+
+basic_opeartors_mapper = {
+    "+": lambda x,y : x+y,
+    "-": lambda x,y : x-y,
+    "*": lambda x,y : x*y,
+    "/": lambda x,y : x/y,
+    "^": lambda x,y : x**y
+}
+
+
+function_mapper = {
+    "max(": lambda x,y : max(x, y),
+    "min(": lambda x,y : min(x, y),
+    "sin(": None
+}
 
 
 def has_precedence(a, b):
@@ -80,7 +97,13 @@ def is_symbol(s):
     """Return True if given str is a symbol, which means
     it is in '+,-,*,/,^', False otherwise.
     """
-    return s in "+-*/^"
+    return s in basic_opeartors_mapper
+
+
+def is_func(s):
+    """Return True if its
+    """
+    pass
 
 
 def is_digit(s):
@@ -89,5 +112,68 @@ def is_digit(s):
     """
     return s in "1234567890"
 
+
 def is_letter(s):
+    """Return True if the given str is a alphabet, which
+    means it is in 'a-z,A-Z', False otherwise.
+    """
     return s.isalpha()
+
+
+def tokenize(e):
+    """Tokenize the expression and return a list that contains
+    all the tokens from start to end. Please notice that ','
+    will be ignored. And also, tokenizer will not recongize
+    any wrong patterns or errors in the expression.
+    """
+    index = 0
+    eindex = 0
+    result = []
+    starts, ends = _match_regex(_func_regex(), e)
+    while index < len(e):
+        if index in starts:
+            result.append(e[index: ends[eindex]])
+            index = ends[eindex]
+            eindex += 1
+            continue
+        token = e[index]
+        if is_digit(token):
+            d = ""
+            while index < len(e) and is_digit(e[index]):
+                d += e[index]
+                index += 1
+            result.append(d)
+            index -= 1
+        elif is_letter(token):
+            d = ""
+            while index < len(e) and is_letter(e[index]):
+                d += e[index]
+                index += 1
+            result.append(d)
+            index -= 1
+        elif is_symbol(token) or token == "(" or token == ")":
+            result.append(token)
+        index += 1
+    return result
+
+
+def _func_regex():
+    "Construct regex for special math functions"
+    regex = "("
+    for f in function_mapper:
+        if "(" in f:
+            index = f.find("(")
+            regex += f[:index] + "\\" + f[index:] + "|"
+        else:
+            regex += f + "|"
+    return regex[:-1] + ")"
+
+
+def _match_regex(r, e):
+    "Match the functions regex and return a list of start indices and a list of end indices"
+    reg = re.compile(r)
+    starts, ends = [], []
+    for m in reg.finditer(e):
+        starts.append(m.start())
+        ends.append(m.end())
+    return starts, ends

@@ -6,7 +6,7 @@ math expression.
 
 
 from queue import Queue
-from expr import is_symbol, is_digit, postfix
+from expr import is_symbol, is_digit, postfix, basic_opeartors_mapper
 import sys
 
 
@@ -138,17 +138,7 @@ def evaluate(node):
         return float(node.sym)
     left = evaluate(node.left)
     right = evaluate(node.right)
-    # check which operation to apply 
-    if node.sym == '+': 
-        return left + right  
-    elif node.sym == '-': 
-        return left - right 
-    elif node.sym == '*': 
-        return left * right
-    elif node.sym == "^":
-        return left ** right 
-    else:
-        return left / right
+    return basic_opeartors_mapper[node.sym](left, right)
 
 
 def build(e):
