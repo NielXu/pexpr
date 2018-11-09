@@ -32,7 +32,7 @@ A tree with parentheses will override the precedence:
 ```
 And the results, of course, are different:
 ```python
-build("3*(1+2)").evaluate*()    # 9.0
+build("3*(1+2)").evaluate()     # 9.0
 build("3*1+2").evaluate()       # 5.0
 ```
 
