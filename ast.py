@@ -176,7 +176,6 @@ def level_order(ast):
     """
     levels = []
     _level_traversal(ast.root, 0, levels)
-    print(levels)
     for index in range(len(levels)):
         br = 2 ** index
         lv = levels[index]
@@ -227,8 +226,9 @@ def main():
 
 
 def testing():
-    e = "(1+2)*3/4"
+    e = "(1+2)*3/4+10*2*3"
     a = build(e)
+    print(a.evaluate())
     print(view(a))
 
 
