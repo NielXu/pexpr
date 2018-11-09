@@ -42,3 +42,4 @@ build("3*1+2").evaluate()       # 5.0
 - [ ] Math functions: sin, cos, tan, asin, acos, atan, ln, log, abs
 - [ ] Testing
 - [ ] LaTeX code
+- [ ] Error handling
