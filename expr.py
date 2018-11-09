@@ -39,6 +39,32 @@ function_mapper = {
 }
 
 
+class token():
+    def __init__(self, sym, is_num=False, is_func=False,
+                    is_dummy=False, is_oper=False,
+                    is_leftb=False, is_rightb=False):
+        self.sym = sym
+        self.is_num = is_num
+        self.is_func = is_func
+        self.is_dummy = is_dummy
+        self.is_oper = is_oper
+        self.is_leftb = is_leftb
+        self.is_rightb = is_rightb
+    
+    def __str__(self):
+        return "token(sym=" + str(self.sym) +\
+                    ", is_func=" + str(self.is_func) +\
+                    ", is_num=" + str(self.is_num) +\
+                    ", is_dummy=" + str(self.is_dummy) +\
+                    ", is_oper=" + str(self.is_oper) +\
+                    ", is_leftb=" + str(self.is_leftb) +\
+                    ", is_rightb=" + str(self.is_rightb) +\
+                    ")"
+    
+    def __repr__(self):
+        return self.__str__()
+
+
 def has_precedence(a, b):
     """Compare two opeartors a and b.
     1. If b is right associativity and has lower precedence than a, return True
@@ -55,35 +81,24 @@ def postfix(e):
     """Convert infix expression to postfix expression and return
     a list that contains all the tokens in postfix order.
     """
-    index = 0
+    tokens = tokenize(e)
     q = []
     op = []
-    while index < len(e):
-        token = e[index]
-        if is_digit(token):
-            d = ""
-            while index < len(e) and is_digit(e[index]):
-                d += e[index]
-                index += 1
-            q.append(d)
-            index -= 1
-        elif is_letter(token):
-            d = ""
-            while index < len(e) and is_letter(e[index]):
-                d += e[index]
-                index += 1
-            q.append(d)
-            index -= 1
-        elif token == "(":
-            op.append(token)
-        elif is_symbol(token):
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if token.is_num or token.is_dummy:
+            q.append(token.sym)
+        if token.is_leftb:
+            op.append(token.sym)
+        elif token.is_oper:
             if len(op) > 0:
-                while len(op) > 0 and op[-1] != "(" and has_precedence(op[-1], token):
+                while len(op) > 0 and op[-1] != "(" and has_precedence(op[-1], token.sym):
                     q.append(op.pop())
-                op.append(token)
+                op.append(token.sym)
             else:
-                op.append(token)
-        elif token == ")":
+                op.append(token.sym)
+        elif token.is_rightb:
             while len(op) > 0 and op[-1] != "(":
                 q.append(op.pop())
             op.pop()
@@ -132,27 +147,31 @@ def tokenize(e):
     starts, ends = _match_regex(_func_regex(), e)
     while index < len(e):
         if index in starts:
-            result.append(e[index: ends[eindex]])
+            result.append(token(e[index: ends[eindex]], is_func=True))
             index = ends[eindex]
             eindex += 1
             continue
-        token = e[index]
-        if is_digit(token):
+        t = e[index]
+        if is_digit(t):
             d = ""
             while index < len(e) and is_digit(e[index]):
                 d += e[index]
                 index += 1
-            result.append(d)
+            result.append(token(d, is_num=True))
             index -= 1
-        elif is_letter(token):
+        elif is_letter(t):
             d = ""
             while index < len(e) and is_letter(e[index]):
                 d += e[index]
                 index += 1
-            result.append(d)
+            result.append(token(d, is_dummy=True))
             index -= 1
-        elif is_symbol(token) or token == "(" or token == ")":
-            result.append(token)
+        elif t == "(":
+            result.append(token(t, is_leftb=True))
+        elif t == ")":
+            result.append(token(t, is_rightb=True))
+        elif is_symbol(t):
+            result.append(token(t, is_oper=True))
         index += 1
     return result
 
@@ -177,5 +196,3 @@ def _match_regex(r, e):
         starts.append(m.start())
         ends.append(m.end())
     return starts, ends
-
-print(tokenize("sin(1+max(2,3*pi))"))
