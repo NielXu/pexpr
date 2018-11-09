@@ -50,6 +50,13 @@ def postfix(e):
                 index += 1
             q.append(d)
             index -= 1
+        elif is_letter(token):
+            d = ""
+            while index < len(e) and is_letter(e[index]):
+                d += e[index]
+                index += 1
+            q.append(d)
+            index -= 1
         elif token == "(":
             op.append(token)
         elif is_symbol(token):
@@ -81,3 +88,6 @@ def is_digit(s):
     is in '0,1,2,3,4,5,6,7,8,9', False otherwise.
     """
     return s in "1234567890"
+
+def is_letter(s):
+    return s.isalpha()

@@ -181,7 +181,7 @@ def build(e):
 def main():
     if len(sys.argv) > 0:
         for e in sys.argv[1:]:
-            print(build(e).evaluate())
+            # print(build(e).evaluate())
             print(build(e).bfs())
 
 
