@@ -168,6 +168,29 @@ def build(e):
     return ast
 
 
+def level_order(ast):
+    """Travel the given AST level by level and return a list
+    that contains nodes at each level, start from root to the
+    most bottom.
+    """
+    l = []
+    _level_traversal(ast.root, 0, l)
+    return l
+
+
+def _level_traversal(root, level, tlist):
+    "Travel the tree level by level and save each level in list"
+    if root is None:
+        return
+
+    if level >= len(tlist):
+        l = []
+        tlist.append(l)
+    tlist[level].append(root.sym)
+    _level_traversal(root.left, level+1, tlist)
+    _level_traversal(root.right, level+1, tlist)
+
+
 def main():
     if len(sys.argv) > 0:
         for e in sys.argv[1:]:
