@@ -7,6 +7,7 @@ math expression.
 
 from queue import Queue
 from expr import is_symbol, is_digit, postfix, basic_opeartors_mapper
+import binarytree
 import sys
 
 
@@ -170,12 +171,31 @@ def build(e):
 
 def level_order(ast):
     """Travel the given AST level by level and return a list
-    that contains nodes at each level, start from root to the
-    most bottom.
+    that contains list of nodes at each level, start from
+    root to the most bottom.
     """
-    l = []
-    _level_traversal(ast.root, 0, l)
-    return l
+    levels = []
+    _level_traversal(ast.root, 0, levels)
+    print(levels)
+    for index in range(len(levels)):
+        br = 2 ** index
+        lv = levels[index]
+        j = len(lv)
+        for _ in range(j, br):
+            levels[index].append(None)
+    return levels
+
+
+def max_depth(ast):
+    return _max_depth(ast.root)
+
+
+def view(ast):
+    levels = level_order(ast)
+    li = []
+    for i in levels:
+        li.extend(i)
+    return binarytree.build(li)
 
 
 def _level_traversal(root, level, tlist):
@@ -191,6 +211,14 @@ def _level_traversal(root, level, tlist):
     _level_traversal(root.right, level+1, tlist)
 
 
+def _max_depth(n):
+    if n is None:
+        return 0
+    left = _max_depth(n.left)
+    right = _max_depth(n.right)
+    return max(left, right) + 1
+
+
 def main():
     if len(sys.argv) > 0:
         for e in sys.argv[1:]:
@@ -198,5 +226,11 @@ def main():
             print(build(e).bfs())
 
 
+def testing():
+    e = "(1+2)*3/4"
+    a = build(e)
+    print(view(a))
+
+
 if __name__ == '__main__':
-    main()
+    testing()
