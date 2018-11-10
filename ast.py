@@ -18,6 +18,9 @@ class node():
         self.left = left
         self.parent = parent
         self.right = right
+    
+    def copy(self):
+        return node(self.sym, self.parent, self.left, self.right)
 
 
 class astree():
@@ -91,39 +94,53 @@ class astree():
         Travel the tree by `in-order` way, and return a list that contains
         the symbols.
         """
+        li = []
         def travel(node):
             if node is not None:
                 travel(node.left)
+                li.append(node.sym)
                 print(node.sym, end=" ")
                 travel(node.right)
         print()
         travel(self.root)
+        return li
     
     def preorder(self):
         """
         Travel the tree by `pre-order` way, and return a list that contains
         the symbols.
         """
+        li = []
         def travel(node):
             if node is not None:
                 print(node.sym, end=" ")
+                li.append(node.sym)
                 travel(node.left)
                 travel(node.right)
         print()
         travel(self.root)
+        return li
     
     def postorder(self):
         """
         Travel the tree by `post-order` way, and return a list that contains
         the symbols.
         """
+        li = []
         def travel(node):
             if node is not None:
                 travel(node.left)
                 travel(node.right)
                 print(node.sym, end=" ")
+                li.append(node.sym)
         print()
         travel(self.root)
+        return li
+    
+    def copy(self):
+        a = astree()
+        a.root = _clone(self.root)
+        return a
 
 
 def evaluate(node):
@@ -176,12 +193,6 @@ def level_order(ast):
     """
     levels = []
     _level_traversal(ast.root, 0, levels)
-    for index in range(len(levels)):
-        br = 2 ** index
-        lv = levels[index]
-        j = len(lv)
-        for _ in range(j, br):
-            levels[index].append(None)
     return levels
 
 
@@ -190,11 +201,9 @@ def max_depth(ast):
 
 
 def view(ast):
-    levels = level_order(ast)
-    li = []
-    for i in levels:
-        li.extend(i)
-    return binarytree.build(li)
+    a = ast.copy()
+    _extend_tree(a.root)
+    print(binarytree.build(a.bfs()))
 
 
 def _level_traversal(root, level, tlist):
@@ -218,6 +227,19 @@ def _max_depth(n):
     return max(left, right) + 1
 
 
+def _clone(n):
+    if n is None:
+        return
+    node = n.copy()
+    node.left = _clone(n.left)
+    node.right = _clone(n.right)
+    return node
+
+
+def _extend_tree(n):
+    pass
+
+
 def main():
     if len(sys.argv) > 0:
         for e in sys.argv[1:]:
@@ -226,10 +248,9 @@ def main():
 
 
 def testing():
-    e = "(1+2)*3/4+10*2*3"
+    e = "2^(1+2)*3/4+10*2*3"
     a = build(e)
     print(a.evaluate())
-    print(view(a))
 
 
 if __name__ == '__main__':
