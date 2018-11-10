@@ -322,7 +322,7 @@ class Node(object):
         #     raise NodeTypeError('left child must be a Node instance')
         # if right is not None and not isinstance(right, Node):
         #     raise NodeTypeError('right child must be a Node instance')
-        self.value = value
+        self.value = "(" + value + ")"
         self.left = left
         self.right = right
 

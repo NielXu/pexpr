@@ -197,12 +197,14 @@ def level_order(ast):
 
 
 def max_depth(ast):
+    "Get the max depth of a given AST"
     return _max_depth(ast.root)
 
 
 def view(ast):
+    "View the AST on console"
     a = ast.copy()
-    _extend_tree(a.root)
+    _extend_tree(a, a.root, max_depth(a))
     print(binarytree.build(a.bfs()))
 
 
@@ -227,17 +229,45 @@ def _max_depth(n):
     return max(left, right) + 1
 
 
+def _level_traversal_node(root, level, tlist):
+    if root is None:
+        return
+
+    if level >= len(tlist):
+        l = []
+        tlist.append(l)
+    tlist[level].append(root)
+    _level_traversal_node(root.left, level+1, tlist)
+    _level_traversal_node(root.right, level+1, tlist)
+
+
 def _clone(n):
     if n is None:
-        return
+        return  
     node = n.copy()
     node.left = _clone(n.left)
     node.right = _clone(n.right)
     return node
 
 
-def _extend_tree(n):
-    pass
+def _extend_tree(a, n, md):
+    if n is None:
+        return
+    if n.left is None and _at_level(n, a) != md:
+        n.left = node(None)
+    if n.right is None and _at_level(n, a) != md:
+        n.right = node(None)
+    _extend_tree(a, n.left, md)
+    _extend_tree(a, n.right, md)
+
+
+def _at_level(n, tree):
+    levels = []
+    _level_traversal_node(tree.root, 0, levels)
+    for index in range(len(levels)):
+        if n in levels[index]:
+            return index+1
+    return -1
 
 
 def main():
@@ -248,8 +278,9 @@ def main():
 
 
 def testing():
-    e = "2^(1+2)*3/4+10*2*3"
+    e = "2^(1+2)*1+3/4+10*2*3"
     a = build(e)
+    view(a)
     print(a.evaluate())
 
 
