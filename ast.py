@@ -6,7 +6,7 @@ math expression.
 
 
 from queue import Queue
-from expr import is_symbol, is_digit, postfix, basic_opeartors_mapper
+import expr
 import binarytree
 import sys
 
@@ -46,25 +46,25 @@ class astree():
             self.root = node(sym, None)
             self.cur = self.root
         else:
-            if is_symbol(sym):
+            if expr.is_symbol(sym) or expr.is_func(sym):
                 if self.cur.right is None:
                     self.cur.right = node(sym, self.cur)
                     self.cur = self.cur.right
-                elif self.cur.left is None:
+                elif self.cur.left is None and not expr.is_unary(self.cur.sym):
                     self.cur.left = node(sym, self.cur)
                     self.cur = self.cur.left
                 else:
-                    while self.cur.left is not None:
+                    while self.cur.left is not None or expr.is_unary(self.cur.sym):
                         self.cur = self.cur.parent
                     self.cur.left = node(sym, self.cur)
                     self.cur = self.cur.left
             else:
                 if self.cur.right is None:
                     self.cur.right = node(sym, self.cur)
-                elif self.cur.left is None:
+                elif self.cur.left is None and not expr.is_unary(self.cur.sym):
                     self.cur.left = node(sym, self.cur)
                 else:
-                    while self.cur.left is not None:
+                    while self.cur.left is not None or expr.is_unary(self.cur.sym):
                         self.cur = self.cur.parent
                     self.cur.left = node(sym, self.cur)
 
@@ -152,11 +152,13 @@ def evaluate(node):
     """
     if node is None:
         return 0
-    if not is_symbol(node.sym):
+    if expr.is_unary(node.sym):
+        return expr.opeartors_mapper[node.sym](evaluate(node.right))
+    if expr.is_number(node.sym):
         return float(node.sym)
     left = evaluate(node.left)
     right = evaluate(node.right)
-    return basic_opeartors_mapper[node.sym](left, right)
+    return expr.opeartors_mapper[node.sym](left, right)
 
 
 def build(e):
@@ -179,7 +181,7 @@ def build(e):
         pi, e
     """
     e = e.replace(" ", "")
-    p = postfix(e)
+    p = expr.postfix(e)
     ast = astree()
     while len(p) > 0:
         ast.add(p.pop())
@@ -278,7 +280,7 @@ def main():
 
 
 def testing():
-    e = "2^(1+2)*1+3/4+10*2*3"
+    e = "2^(log(3, 2)+sin(max(0,0))-abs(0-10))"
     a = build(e)
     view(a)
     print(a.evaluate())

@@ -5,6 +5,7 @@ This module contains functions for expression operations.
 
 import collections
 import re
+import math
 
 
 _Op = collections.namedtuple('Op', [
@@ -23,7 +24,7 @@ _OPS = {
     '-': _Op(precedence=2, associativity=_LEFT)}
 
 
-basic_opeartors_mapper = {
+opeartors_mapper = {
     "+": lambda x,y : x+y,
     "-": lambda x,y : x-y,
     "*": lambda x,y : x*y,
@@ -35,8 +36,33 @@ basic_opeartors_mapper = {
 function_mapper = {
     "max": lambda x,y : max(x, y),
     "min": lambda x,y : min(x, y),
-    "sin": None
+    "log": lambda x,y : math.log(x,y)
 }
+
+
+opeartors_mapper.update(function_mapper)
+
+
+unary_function_mapper = {
+    # TRIG
+    "sin": lambda x : math.sin(x),
+    "cos": lambda x : math.cos(x),
+    "tan": lambda x : math.tan(x),
+    "asin":lambda x : math.asin(x),
+    "acos":lambda x : math.acos(x),
+    "atan":lambda x : math.atan(x),
+
+    # LOG
+    "lg":  lambda x : math.log10(x),
+    "ln":  lambda x : math.log(x),
+
+    # USEFUL
+    "sqrt":lambda x : math.sqrt(x),
+    "abs": lambda x : abs(x)
+}
+
+
+opeartors_mapper.update(unary_function_mapper)
 
 
 class token():
@@ -114,13 +140,22 @@ def is_symbol(s):
     """Return True if given str is a symbol, which means
     it is in '+,-,*,/,^', False otherwise.
     """
-    return s in basic_opeartors_mapper
+    return s in opeartors_mapper
+
+
+def is_unary(s):
+    """Return True if given str is a unary operator, which means
+    it is in 'sin, cos, tan, acos, asin, atan, log, ln, abs` and
+    so on, False otherwise.
+    """
+    return s in unary_function_mapper
 
 
 def is_func(s):
-    """Return True if its
+    """Return True if given str is a function operator, no matter
+    binary or unary, False otherwise.
     """
-    pass
+    return s in function_mapper or s in unary_function_mapper
 
 
 def is_digit(s):
@@ -128,6 +163,17 @@ def is_digit(s):
     is in '0,1,2,3,4,5,6,7,8,9', False otherwise.
     """
     return s in "1234567890"
+
+
+def is_number(s):
+    """Return True if given str is a number, different from
+    `is_digit`, this function will check the complete string
+    """
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 
 def is_letter(s):
@@ -182,6 +228,12 @@ def _func_regex():
     "Construct regex for special math functions"
     regex = "("
     for f in function_mapper:
+        if "(" in f:
+            index = f.find("(")
+            regex += f[:index] + "\\" + f[index:] + "|"
+        else:
+            regex += f + "|"
+    for f in unary_function_mapper:
         if "(" in f:
             index = f.find("(")
             regex += f[:index] + "\\" + f[index:] + "|"
