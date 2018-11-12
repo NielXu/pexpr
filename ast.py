@@ -6,7 +6,8 @@ math expression.
 
 
 from queue import Queue
-from expr import is_symbol, is_digit, postfix
+from expr import is_symbol, is_digit, postfix, basic_opeartors_mapper
+import binarytree
 import sys
 
 
@@ -17,6 +18,9 @@ class node():
         self.left = left
         self.parent = parent
         self.right = right
+    
+    def copy(self):
+        return node(self.sym, self.parent, self.left, self.right)
 
 
 class astree():
@@ -90,39 +94,53 @@ class astree():
         Travel the tree by `in-order` way, and return a list that contains
         the symbols.
         """
+        li = []
         def travel(node):
             if node is not None:
                 travel(node.left)
+                li.append(node.sym)
                 print(node.sym, end=" ")
                 travel(node.right)
         print()
         travel(self.root)
+        return li
     
     def preorder(self):
         """
         Travel the tree by `pre-order` way, and return a list that contains
         the symbols.
         """
+        li = []
         def travel(node):
             if node is not None:
                 print(node.sym, end=" ")
+                li.append(node.sym)
                 travel(node.left)
                 travel(node.right)
         print()
         travel(self.root)
+        return li
     
     def postorder(self):
         """
         Travel the tree by `post-order` way, and return a list that contains
         the symbols.
         """
+        li = []
         def travel(node):
             if node is not None:
                 travel(node.left)
                 travel(node.right)
                 print(node.sym, end=" ")
+                li.append(node.sym)
         print()
         travel(self.root)
+        return li
+    
+    def copy(self):
+        a = astree()
+        a.root = _clone(self.root)
+        return a
 
 
 def evaluate(node):
@@ -138,17 +156,7 @@ def evaluate(node):
         return float(node.sym)
     left = evaluate(node.left)
     right = evaluate(node.right)
-    # check which operation to apply 
-    if node.sym == '+': 
-        return left + right  
-    elif node.sym == '-': 
-        return left - right 
-    elif node.sym == '*': 
-        return left * right
-    elif node.sym == "^":
-        return left ** right 
-    else:
-        return left / right
+    return basic_opeartors_mapper[node.sym](left, right)
 
 
 def build(e):
@@ -178,6 +186,90 @@ def build(e):
     return ast
 
 
+def level_order(ast):
+    """Travel the given AST level by level and return a list
+    that contains list of nodes at each level, start from
+    root to the most bottom.
+    """
+    levels = []
+    _level_traversal(ast.root, 0, levels)
+    return levels
+
+
+def max_depth(ast):
+    "Get the max depth of a given AST"
+    return _max_depth(ast.root)
+
+
+def view(ast):
+    "View the AST on console"
+    a = ast.copy()
+    _extend_tree(a, a.root, max_depth(a))
+    print(binarytree.build(a.bfs()))
+
+
+def _level_traversal(root, level, tlist):
+    "Travel the tree level by level and save each level in list"
+    if root is None:
+        return
+
+    if level >= len(tlist):
+        l = []
+        tlist.append(l)
+    tlist[level].append(root.sym)
+    _level_traversal(root.left, level+1, tlist)
+    _level_traversal(root.right, level+1, tlist)
+
+
+def _max_depth(n):
+    if n is None:
+        return 0
+    left = _max_depth(n.left)
+    right = _max_depth(n.right)
+    return max(left, right) + 1
+
+
+def _level_traversal_node(root, level, tlist):
+    if root is None:
+        return
+
+    if level >= len(tlist):
+        l = []
+        tlist.append(l)
+    tlist[level].append(root)
+    _level_traversal_node(root.left, level+1, tlist)
+    _level_traversal_node(root.right, level+1, tlist)
+
+
+def _clone(n):
+    if n is None:
+        return  
+    node = n.copy()
+    node.left = _clone(n.left)
+    node.right = _clone(n.right)
+    return node
+
+
+def _extend_tree(a, n, md):
+    if n is None:
+        return
+    if n.left is None and _at_level(n, a) != md:
+        n.left = node(None)
+    if n.right is None and _at_level(n, a) != md:
+        n.right = node(None)
+    _extend_tree(a, n.left, md)
+    _extend_tree(a, n.right, md)
+
+
+def _at_level(n, tree):
+    levels = []
+    _level_traversal_node(tree.root, 0, levels)
+    for index in range(len(levels)):
+        if n in levels[index]:
+            return index+1
+    return -1
+
+
 def main():
     if len(sys.argv) > 0:
         for e in sys.argv[1:]:
@@ -185,5 +277,12 @@ def main():
             print(build(e).bfs())
 
 
+def testing():
+    e = "2^(1+2)*1+3/4+10*2*3"
+    a = build(e)
+    view(a)
+    print(a.evaluate())
+
+
 if __name__ == '__main__':
-    main()
+    testing()
