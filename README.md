@@ -1,7 +1,7 @@
 # Intro
 `pexpr` is a module that contains tools to convert from expressions to Abstract Syntax Tree. After that, it can be evaluated(if possible), transformed(prefix, infix, postfix) or even converted to Latex code to generate the expression PDF.
 
-# AST
+# Abstract-Syntax-Tree
 To build a AST(Abstract Syntax Tree), the recommend way would be using `build` function in `ast.py`.
 
 For example, `build("1+1")` will be converted to the tree:
@@ -34,6 +34,27 @@ And the results, of course, are different:
 ```python
 build("3*(1+2)").evaluate()     # 9.0
 build("3*1+2").evaluate()       # 5.0
+```
+
+# Tree viewer
+To view the tree that created by the `build` function, simply use `view()` function in `ast.py`:
+```python
+a = build("2^(1+2)*1+3/4+10*2*3")
+view(a)
+```
+the output will be displayed on the console:
+```
+                               _____________(+)______________
+                              /                              \
+                       _____(+)_____                    _____(*)_
+                      /             \                  /         \
+       _____________(*)_           _(/)_           __(*)_        (3)
+      /                 \         /     \         /      \
+   _(^)_____            (1)     (3)     (4)     (10)     (2)
+  /         \
+(2)        _(+)_
+          /     \
+        (1)     (2)
 ```
 
 # TODO
