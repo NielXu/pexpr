@@ -280,7 +280,7 @@ def main():
 
 
 def testing():
-    e = "1-(-(-(2)))"
+    e = "-(-5-1)"
     a = build(e)
     view(a)
     print(a.evaluate())
