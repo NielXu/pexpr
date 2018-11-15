@@ -86,6 +86,7 @@ Here are some symbols and special numbers that AST supports:
 | sqrt      | Square root| sqrt(0)|
 | abs      | Absolute value| abs(-1)|
 | ~      | Negation| ~-5|
+
 Note: Some negative sign(-) will be converted to negation(~) when building AST
 
 ### Special Numbers
