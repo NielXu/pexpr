@@ -280,7 +280,7 @@ def main():
 
 
 def testing():
-    e = "2^(log(3, 2)+sin(max(0,0))-abs(0-10))"
+    e = "1-(-(-(2)))"
     a = build(e)
     view(a)
     print(a.evaluate())
