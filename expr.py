@@ -58,7 +58,9 @@ unary_function_mapper = {
 
     # USEFUL
     "sqrt":lambda x : math.sqrt(x),
-    "abs": lambda x : abs(x)
+    "abs": lambda x : abs(x),
+
+    "~": lambda x : -x
 }
 
 
@@ -201,27 +203,75 @@ def tokenize(e):
             continue
         t = e[index]
         if is_digit(t):
-            d = ""
-            while index < len(e) and is_digit(e[index]):
-                d += e[index]
-                index += 1
-            result.append(token(d, is_num=True))
-            index -= 1
+            index = _sub_num(result, index, e)
         elif is_letter(t):
-            d = ""
-            while index < len(e) and is_letter(e[index]):
-                d += e[index]
-                index += 1
-            result.append(token(d, is_dummy=True))
-            index -= 1
+            index = _sub_dummy(result, index, e)
         elif t == "(":
             result.append(token(t, is_leftb=True))
         elif t == ")":
             result.append(token(t, is_rightb=True))
         elif is_symbol(t):
-            result.append(token(t, is_oper=True))
+            if t == "-":
+                if index > 0:
+                    prev, next_t = e[index-1], e[index+1]
+                    if is_digit(prev) or is_letter(prev) or prev == ")":
+                        result.append(token(t, is_oper=True))
+                    elif index + 1 in starts:
+                        result.append(token("~", is_func=True))
+                    elif is_digit(next_t):
+                        index += 1
+                        index = _sub_num(result, index, e, "-")
+                    elif is_letter(next_t):
+                        index += 1
+                        index + _sub_dummy(result, index, e, "-")
+                    else:
+                        result.append(token("~", is_func=True))
+                else:
+                    next_t = e[index+1]
+                    if is_digit(next_t):
+                        index += 1
+                        index = _sub_num(result, index, e, "-")
+                    elif index + 1 in starts:
+                        result.append(token("~", is_func=True))
+                    elif is_letter(next_t):
+                        index += 1
+                        index = _sub_dummy(result, index, e, "-")
+                    else:
+                        result.append(token("~", is_func=True))
+            else:
+                result.append(token(t, is_oper=True))
         index += 1
     return result
+
+
+def _sub_dummy(result, index, e, prev=""):
+    d = prev
+    while index < len(e) and is_digit(e[index]):
+        d += e[index]
+        index += 1
+    result.append(token(d, is_dummy=True))
+    index -= 1
+    return index
+
+
+def _sub_num(result, index, e, prev=""):
+    d = prev
+    while index < len(e) and is_digit(e[index]):
+        d += e[index]
+        index += 1
+    result.append(token(d, is_num=True))
+    index -= 1
+    return index
+
+
+def _sub_func(result, index, e, prev):
+    d = prev
+    while index < len(e) and is_digit(e[index]):
+        d += e[index]
+        index += 1
+    result.append(token(d, is_func=True))
+    index -= 1
+    return index
 
 
 def _func_regex():

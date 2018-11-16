@@ -57,10 +57,50 @@ the output will be displayed on the console:
         (1)     (2)
 ```
 
+# Operations
+Here are some symbols and special numbers that AST supports:
+
+### Binary Operations
+| Symbol        | Operation           | Example  |
+| :-----------: |:-------------|:-----:|
+| +     | Addition | 1+1 |
+| -     | Subtraction      |  1-2 |
+| *     | Multiplication  |    1*1 |
+| /     | Division | 1/1 |
+| ^     | Power | 1^2 |
+| max     | Max value of two numbers | max(1,2) |
+| min     | Min value of two numbers | min(1,2) |
+|log      | Logarithm given base and exponent| log(2, 1)|
+
+### Unary Operations
+| Symbol        | Operation           | Example  |
+| :-----------: |:-------------|:-----:|
+| sin     | Trig function, sin | sin(0) |
+| cos     | Trig function, cos      |  cos(0) |
+| tan     | Trig function, tan  |    tan(1) |
+| asin     | Inverse trig function, arcsin | asin(1) |
+| acos     | Inverse trig function, arccos | acos(1) |
+| atan     | Inverse trig function, arctan | atan(1) |
+| lg      | Logarithm with base 10 | lg(1) |
+| ln      | Logarithm with base e| ln(1)|
+| sqrt      | Square root| sqrt(0)|
+| abs      | Absolute value| abs(-1)|
+| ~      | Negation| ~-5|
+
+Note: Some negative sign(-) will be converted to negation(~) when building AST
+
+### Special Numbers
+| Symbol        |
+| :-----------: |
+| e     |
+| pi    |
+
+
+
 # TODO
-- [ ] Document
+- [x] Document
 - [ ] Special numbers: e, pi
-- [ ] Math functions: sin, cos, tan, asin, acos, atan, ln, log, abs
+- [x] Math functions: sin, cos, tan, asin, acos, atan, ln, log, abs
 - [ ] Testing
 - [ ] LaTeX code
 - [ ] Error handling
