@@ -214,8 +214,10 @@ def tokenize(e):
             if t == "-":
                 if index > 0:
                     prev, next_t = e[index-1], e[index+1]
-                    if is_digit(prev) or is_letter(prev):
+                    if is_digit(prev) or is_letter(prev) or prev == ")":
                         result.append(token(t, is_oper=True))
+                    elif index + 1 in starts:
+                        result.append(token("~", is_func=True))
                     elif is_digit(next_t):
                         index += 1
                         index = _sub_num(result, index, e, "-")
@@ -229,6 +231,8 @@ def tokenize(e):
                     if is_digit(next_t):
                         index += 1
                         index = _sub_num(result, index, e, "-")
+                    elif index + 1 in starts:
+                        result.append(token("~", is_func=True))
                     elif is_letter(next_t):
                         index += 1
                         index = _sub_dummy(result, index, e, "-")

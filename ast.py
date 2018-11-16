@@ -280,7 +280,7 @@ def main():
 
 
 def testing():
-    e = "-(-5-1)"
+    e = "-sin(-1)*-1/1"
     a = build(e)
     view(a)
     print(a.evaluate())
