@@ -96,17 +96,11 @@ Note: Some negative sign(-) will be converted to negation(~) when building AST
 | pi    |
 
 
-# Existing Bugs
-- Expressions that contain negative signs followed by some special functions will cause error, for example, `-sin(0)`
-
-If you find any bugs or evluation errors, feel free to open an issue.
-
-
 
 # TODO
-- [ ] Document
+- [x] Document
 - [ ] Special numbers: e, pi
-- [ ] Math functions: sin, cos, tan, asin, acos, atan, ln, log, abs
+- [x] Math functions: sin, cos, tan, asin, acos, atan, ln, log, abs
 - [ ] Testing
 - [ ] LaTeX code
 - [ ] Error handling
