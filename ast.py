@@ -153,12 +153,12 @@ def evaluate(node):
     if node is None:
         return 0
     if expr.is_unary(node.sym):
-        return expr.opeartors_mapper[node.sym](evaluate(node.right))
+        return expr.function_mapper[node.sym](evaluate(node.right))
     if expr.is_number(node.sym):
         return float(node.sym)
     left = evaluate(node.left)
     right = evaluate(node.right)
-    return expr.opeartors_mapper[node.sym](left, right)
+    return expr.symbols[node.sym](left, right)
 
 
 def build(e):
@@ -280,7 +280,7 @@ def main():
 
 
 def testing():
-    e = "2^(log(3, 2)+sin(max(0,0))-abs(0-10))"
+    e = "(5*acos((0.5^sqrt(1))))"
     a = build(e)
     view(a)
     print(a.evaluate())

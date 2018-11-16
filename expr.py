@@ -3,6 +3,7 @@ This module contains functions for expression operations.
 """
 
 
+import random
 import collections
 import re
 import math
@@ -24,6 +25,13 @@ _OPS = {
     '-': _Op(precedence=2, associativity=_LEFT)}
 
 
+# Symbols contains every operators and math functions
+symbols = {
+
+}
+
+
+# operators_mapper contains basic operators: +-*/^
 opeartors_mapper = {
     "+": lambda x,y : x+y,
     "-": lambda x,y : x-y,
@@ -31,18 +39,25 @@ opeartors_mapper = {
     "/": lambda x,y : x/y,
     "^": lambda x,y : x**y
 }
+symbols.update(opeartors_mapper)
 
 
+# function_mapper contains both binary math functions and unary math functions
 function_mapper = {
+
+}
+
+
+# binary_function_mapper contains functions that require two values
+binary_function_mapper = {
     "max": lambda x,y : max(x, y),
     "min": lambda x,y : min(x, y),
     "log": lambda x,y : math.log(x,y)
 }
+function_mapper.update(binary_function_mapper)
 
 
-opeartors_mapper.update(function_mapper)
-
-
+# unary_function_mapper contains functions that require only one value
 unary_function_mapper = {
     # TRIG
     "sin": lambda x : math.sin(x),
@@ -58,11 +73,12 @@ unary_function_mapper = {
 
     # USEFUL
     "sqrt":lambda x : math.sqrt(x),
-    "abs": lambda x : abs(x)
+    "abs": lambda x : abs(x),
+
+    "~": lambda x : -x
 }
-
-
-opeartors_mapper.update(unary_function_mapper)
+function_mapper.update(unary_function_mapper)
+symbols.update(function_mapper)
 
 
 class token():
@@ -155,14 +171,14 @@ def is_func(s):
     """Return True if given str is a function operator, no matter
     binary or unary, False otherwise.
     """
-    return s in function_mapper or s in unary_function_mapper
+    return s in function_mapper
 
 
 def is_digit(s):
     """Return True if given str is a digit, which means it
     is in '0,1,2,3,4,5,6,7,8,9', False otherwise.
     """
-    return s in "1234567890"
+    return s in "1234567890."
 
 
 def is_number(s):
@@ -183,6 +199,17 @@ def is_letter(s):
     return s.isalpha()
 
 
+def rand_exp(n, low, high, basic_only=True, int_only=True):
+    """Generate a random expressions with random operators, math
+    functions and numbers. And the numbers in the expression are
+    restricted by the given n value
+    """
+    if basic_only:
+        return _gen_rand_exp_oper(1, n, low, high, int_only)
+    else:
+        return _gen_rand_exp(1, n, low, high, int_only)
+
+
 def tokenize(e):
     """Tokenize the expression and return a list that contains
     all the tokens from start to end. Please notice that ','
@@ -201,27 +228,129 @@ def tokenize(e):
             continue
         t = e[index]
         if is_digit(t):
-            d = ""
-            while index < len(e) and is_digit(e[index]):
-                d += e[index]
-                index += 1
-            result.append(token(d, is_num=True))
-            index -= 1
+            index = _sub_num(result, index, e)
         elif is_letter(t):
-            d = ""
-            while index < len(e) and is_letter(e[index]):
-                d += e[index]
-                index += 1
-            result.append(token(d, is_dummy=True))
-            index -= 1
+            index = _sub_dummy(result, index, e)
         elif t == "(":
             result.append(token(t, is_leftb=True))
         elif t == ")":
             result.append(token(t, is_rightb=True))
         elif is_symbol(t):
-            result.append(token(t, is_oper=True))
+            if t == "-":
+                if index > 0:
+                    prev, next_t = e[index-1], e[index+1]
+                    if is_digit(prev) or is_letter(prev) or prev == ")":
+                        result.append(token(t, is_oper=True))
+                    elif index + 1 in starts:
+                        result.append(token("~", is_func=True))
+                    elif is_digit(next_t):
+                        index += 1
+                        index = _sub_num(result, index, e, "-")
+                    elif is_letter(next_t):
+                        index += 1
+                        index + _sub_dummy(result, index, e, "-")
+                    else:
+                        result.append(token("~", is_func=True))
+                else:
+                    next_t = e[index+1]
+                    if is_digit(next_t):
+                        index += 1
+                        index = _sub_num(result, index, e, "-")
+                    elif index + 1 in starts:
+                        result.append(token("~", is_func=True))
+                    elif is_letter(next_t):
+                        index += 1
+                        index = _sub_dummy(result, index, e, "-")
+                    else:
+                        result.append(token("~", is_func=True))
+            else:
+                result.append(token(t, is_oper=True))
         index += 1
     return result
+
+
+def _gen_rand_exp_oper(n, m, low, high, int_only):
+    "Generate expression with basic operators only"
+    rand = random.choice(list(opeartors_mapper.keys()))
+    rand_a = str(random.randint(low, high)) if int_only else str(random.uniform(low, high))
+    rand_b = str(random.randint(low, high)) if int_only else str(random.uniform(low, high))
+    if n == m:
+        return "("+rand_a+rand+rand_b+")"
+    else:
+        dec = random.randint(0, 2)
+        if dec == 0:
+            return "("+_gen_rand_exp_oper(n+1, m, low, high, int_only)+ rand + _gen_rand_exp_oper(n+1, m, low, high, int_only)+")"
+        elif dec == 1:
+            return "("+rand_a + rand + _gen_rand_exp_oper(n+1, m, low, high, int_only)+")"
+        else:
+            return "("+_gen_rand_exp_oper(n+1, m, low, high, int_only)+ rand + rand_b+")"
+
+
+def _gen_rand_exp(n, m, low, high, int_only):
+    rand = random.choice(list(symbols.keys()))
+    if is_func(rand):
+        if is_unary(rand):
+            if n == m:
+                rand_number = str(random.randint(low, high)) if int_only else str(random.uniform(low, high))
+                return rand+"("+rand_number+")"
+            else:
+                return rand+"("+_gen_rand_exp(n+1, m, low, high, int_only)+")"
+        else:
+            rand_a = str(random.randint(low, high)) if int_only else str(random.uniform(low, high))
+            rand_b = str(random.randint(low, high)) if int_only else str(random.uniform(low, high))
+            if n == m:
+                return rand+"("+rand_a+","+rand_b+")"
+            else:
+                dec = random.randint(0, 2)
+                if dec == 0:
+                    return rand + "("+_gen_rand_exp(n+1, m, low, high, int_only)+ "," + _gen_rand_exp(n+1, m, low, high, int_only)+")"
+                elif dec == 1:
+                    return rand + "("+rand_a + "," + _gen_rand_exp(n+1, m, low, high, int_only)+")"
+                else:
+                    return rand + "("+_gen_rand_exp(n+1, m, low, high, int_only)+ "," + rand_b+")"
+    else:
+        rand_a = str(random.randint(low, high)) if int_only else str(random.uniform(low, high))
+        rand_b = str(random.randint(low, high)) if int_only else str(random.uniform(low, high))
+        if n == m:
+            return "("+rand_a + rand + rand_b+")"
+        else:
+            dec = random.randint(0, 2)
+            if dec == 0:
+                return "("+_gen_rand_exp(n+1, m, low, high, int_only)+ rand + _gen_rand_exp(n+1, m, low, high, int_only)+")"
+            elif dec == 1:
+                return "("+rand_a + rand + _gen_rand_exp(n+1, m, low, high, int_only)+")"
+            else:
+                return "("+_gen_rand_exp(n+1, m, low, high, int_only)+ rand + rand_b+")"
+
+
+def _sub_dummy(result, index, e, prev=""):
+    d = prev
+    while index < len(e) and is_digit(e[index]):
+        d += e[index]
+        index += 1
+    result.append(token(d, is_dummy=True))
+    index -= 1
+    return index
+
+
+def _sub_num(result, index, e, prev=""):
+    d = prev
+    while index < len(e) and (is_digit(e[index]) or e[index] == "."):
+        d += e[index]
+        index += 1
+    result.append(token(d, is_num=True))
+    index -= 1
+    return index
+
+
+def _sub_func(result, index, e, prev):
+    d = prev
+    while index < len(e) and is_digit(e[index]):
+        d += e[index]
+        index += 1
+    result.append(token(d, is_func=True))
+    index -= 1
+    return index
 
 
 def _func_regex():
