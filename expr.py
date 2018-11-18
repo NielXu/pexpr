@@ -81,6 +81,12 @@ function_mapper.update(unary_function_mapper)
 symbols.update(function_mapper)
 
 
+special_number = {
+    "e":  math.e,
+    "pi": math.pi
+}
+
+
 class token():
     def __init__(self, sym, is_num=False, is_func=False,
                     is_dummy=False, is_oper=False,
@@ -197,6 +203,13 @@ def is_letter(s):
     means it is in 'a-z,A-Z', False otherwise.
     """
     return s.isalpha()
+
+
+def is_special_number(s):
+    """Return True if the given str is a special number,
+    for example, pi, e, False otherwise.
+    """
+    return s in special_number
 
 
 def rand_exp(n, low, high, basic_only=True, int_only=True):
@@ -325,7 +338,7 @@ def _gen_rand_exp(n, m, low, high, int_only):
 
 def _sub_dummy(result, index, e, prev=""):
     d = prev
-    while index < len(e) and is_digit(e[index]):
+    while index < len(e) and is_letter(e[index]):
         d += e[index]
         index += 1
     result.append(token(d, is_dummy=True))
