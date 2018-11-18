@@ -156,6 +156,8 @@ def evaluate(node):
         return expr.function_mapper[node.sym](evaluate(node.right))
     if expr.is_number(node.sym):
         return float(node.sym)
+    if expr.is_special_number(node.sym):
+        return expr.special_number[node.sym]
     left = evaluate(node.left)
     right = evaluate(node.right)
     return expr.symbols[node.sym](left, right)
@@ -280,7 +282,7 @@ def main():
 
 
 def testing():
-    e = "(5*acos((0.5^sqrt(1))))"
+    e = "e^2+2*pi"
     a = build(e)
     view(a)
     print(a.evaluate())
