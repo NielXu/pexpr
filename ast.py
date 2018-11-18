@@ -68,10 +68,6 @@ class astree():
                         self.cur = self.cur.parent
                     self.cur.left = node(sym, self.cur)
 
-    def evaluate(self):
-        "Evaluate the result of the AST, and return the value as `float`."
-        return evaluate(self.root)
-    
     def bfs(self):
         """
         Travel the tree in `breadth first search` way, which is from left to
@@ -289,7 +285,10 @@ def main():
     args = parser.parse_args()
     exp = args.eval[0]
     a = build(exp)
-    print(a.evaluate())
+    if expr.is_evaluable(exp):
+        print(evaluate(a.root))
+    else:
+        print("Expression not evaluable: "+exp)
     if args.view:
         view(a)
 
