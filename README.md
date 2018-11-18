@@ -99,7 +99,7 @@ Note: Some negative sign(-) will be converted to negation(~) when building AST
 
 # TODO
 - [x] Document
-- [ ] Special numbers: e, pi
+- [x] Special numbers: e, pi
 - [x] Math functions: sin, cos, tan, asin, acos, atan, ln, log, abs
 - [ ] Testing
 - [ ] LaTeX code
