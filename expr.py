@@ -165,6 +165,17 @@ def is_symbol(s):
     return s in opeartors_mapper
 
 
+def is_evaluable(s):
+    """Return True if the given expression is evaluable,
+    False otherwise.
+    """
+    tokens = tokenize(s)
+    for token in tokens:
+        if token.is_dummy and token.sym not in special_number:
+            return False
+    return True
+
+
 def is_unary(s):
     """Return True if given str is a unary operator, which means
     it is in 'sin, cos, tan, acos, asin, atan, log, ln, abs` and

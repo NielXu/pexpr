@@ -1,6 +1,38 @@
 # Intro
 `pexpr` is a module that contains tools to convert from expressions to Abstract Syntax Tree. After that, it can be evaluated(if possible), transformed(prefix, infix, postfix) or even converted to Latex code to generate the expression PDF.
 
+# CLI
+To quickly calculate a math expression just type in command line:
+```
+python ast.py "1*2+max(4,5)/3"
+```
+and the result will be:
+```
+3.666666666666667
+```
+To view the tree, enable the view feature:
+```
+python ast.py "1*2+max(4,5)/3" -v
+```
+The result will be following:
+```
+3.666666666666667
+
+       _____(+)_______________
+      /                       \
+   _(*)_                ______(/)_
+  /     \              /          \
+(1)     (2)        _(max)_        (3)
+                  /       \
+                (4)       (5)
+```
+<b>Note:</b> quotation is required since there are special characters in some cases
+
+For more information, enter:
+```
+python ast.py -h
+```
+
 # Abstract-Syntax-Tree
 To build a AST(Abstract Syntax Tree), the recommend way would be using `build` function in `ast.py`.
 
