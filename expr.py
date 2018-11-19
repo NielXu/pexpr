@@ -171,7 +171,7 @@ def is_evaluable(s):
     """
     tokens = tokenize(s)
     for token in tokens:
-        if token.is_dummy:
+        if token.is_dummy and token.sym not in special_number:
             return False
     return True
 
