@@ -4,17 +4,17 @@
 # CLI
 To quickly calculate a math expression just type in command line:
 ```
-python ast.py "1*2+max(4,5)/3"
+python ast.py "(1*2+max(4,5)/3)"
 ```
 and the result will be:
 ```
 3.666666666666667
 ```
-To view the tree, enable the view feature:
+To view the tree, enable the view feature by:
 ```
-python ast.py "1*2+max(4,5)/3" -v
+python ast.py -v "(1*2+max(4,5)/3)"
 ```
-The result will be following:
+The result will be the following:
 ```
 3.666666666666667
 
@@ -27,6 +27,8 @@ The result will be following:
                 (4)       (5)
 ```
 <b>Note:</b> quotation is required since there are special characters in some cases
+
+<b>Note:</b> brackets are required since minus sign is a special character
 
 For more information, enter:
 ```

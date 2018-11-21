@@ -9,6 +9,7 @@ from queue import Queue
 import expr
 import binarytree
 import sys
+import textwrap
 
 
 class node():
@@ -273,7 +274,12 @@ def _at_level(n, tree):
 def main():
     import argparse
     parser = argparse.ArgumentParser(prog="ast",
-        description="Generate and view Abstract-Syntax-Tree")
+        description="Generate and view Abstract-Syntax-Tree",
+        epilog=textwrap.dedent('''additional information:
+                Please notice that quotations are required since some
+                of the symbols are special characters in command line.
+                And brackets are also necessary in most of the cases
+                since minus sign is a special character as well.'''))
     parser.add_argument("eval",
         help="Evaluate the given expression and display the result if possible",
         metavar="expr",
