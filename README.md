@@ -135,6 +135,6 @@ Note: Some negative sign(-) will be converted to negation(~) when building AST
 - [x] Document
 - [x] Special numbers: e, pi
 - [x] Math functions: sin, cos, tan, asin, acos, atan, ln, log, abs
-- [ ] Testing
+- [x] Testing
 - [ ] LaTeX code
 - [ ] Error handling
