@@ -415,8 +415,3 @@ def _match_regex(r, e):
         starts.append(m.start())
         ends.append(m.end())
     return starts, ends
-
-
-tks = tokenize("--2+1/-3^5")
-for t in tks:
-    print(t.sym)
