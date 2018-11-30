@@ -140,24 +140,26 @@ class astree():
         return a
 
 
-def evaluate(node):
+def evaluate(a):
     """
-    Evaluate the result of a AST by a given node. Please
+    Evaluate the result of a AST by a given AST. Please
     notice that not all AST can be evaluated. Only the
     tree that contains valid numbers or symbols can be
     evaluated.
     """
-    if node is None:
-        return 0
-    if expr.is_unary(node.sym):
-        return expr.function_mapper[node.sym](evaluate(node.right))
-    if expr.is_number(node.sym):
-        return float(node.sym)
-    if expr.is_special_number(node.sym):
-        return expr.special_number[node.sym]
-    left = evaluate(node.left)
-    right = evaluate(node.right)
-    return expr.symbols[node.sym](left, right)
+    def _eval(node):
+        if node is None:
+            return 0
+        if expr.is_unary(node.sym):
+            return expr.function_mapper[node.sym](_eval(node.right))
+        if expr.is_number(node.sym):
+            return float(node.sym)
+        if expr.is_special_number(node.sym):
+            return expr.special_number[node.sym]
+        left = _eval(node.left)
+        right = _eval(node.right)
+        return expr.symbols[node.sym](left, right)
+    return _eval(a.root)
 
 
 def build(e):
@@ -293,7 +295,7 @@ def main():
         exp = args.eval
         a = build(exp)
         if expr.is_evaluable(exp):
-            print(evaluate(a.root))
+            print(evaluate(a))
         else:
             print("Expression not evaluable: "+exp)
         if args.view:
