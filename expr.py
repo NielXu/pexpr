@@ -22,7 +22,9 @@ _OPS = {
     '*': _Op(precedence=3, associativity=_LEFT),
     '/': _Op(precedence=3, associativity=_LEFT),
     '+': _Op(precedence=2, associativity=_LEFT),
-    '-': _Op(precedence=2, associativity=_LEFT)}
+    '-': _Op(precedence=2, associativity=_LEFT),
+    '~': _Op(precedence=2, associativity=_LEFT)
+}
 
 
 # Symbols contains every operators and math functions
@@ -37,7 +39,7 @@ opeartors_mapper = {
     "-": lambda x,y : x-y,
     "*": lambda x,y : x*y,
     "/": lambda x,y : x/y,
-    "^": lambda x,y : x**y
+    "^": lambda x,y : x**y,
 }
 symbols.update(opeartors_mapper)
 
@@ -252,9 +254,11 @@ def tokenize(e):
             continue
         t = e[index]
         if is_digit(t):
-            index = _sub_num(result, index, e)
+            t, index = _sub_num(index, e)
+            result.append(t)
         elif is_letter(t):
-            index = _sub_dummy(result, index, e)
+            t, index = _sub_dummy(index, e)
+            result.append(t)
         elif t == "(":
             result.append(token(t, is_leftb=True))
         elif t == ")":
@@ -266,27 +270,38 @@ def tokenize(e):
                     if is_digit(prev) or is_letter(prev) or prev == ")":
                         result.append(token(t, is_oper=True))
                     elif index + 1 in starts:
-                        result.append(token("~", is_func=True))
+                        result.append(token("~", is_oper=True))
                     elif is_digit(next_t):
                         index += 1
-                        index = _sub_num(result, index, e, "-")
+                        t, index = _sub_num(index, e, "-")
+                        result.append(t)
                     elif is_letter(next_t):
                         index += 1
-                        index + _sub_dummy(result, index, e, "-")
+                        t, index = _sub_dummy(index, e, "-")
+                        result.append(t)
                     else:
-                        result.append(token("~", is_func=True))
+                        result.append(token("~", is_oper=True))
                 else:
                     next_t = e[index+1]
                     if is_digit(next_t):
                         index += 1
-                        index = _sub_num(result, index, e, "-")
+                        t, index = _sub_num(index, e, "-")
+                        result.append(t)
                     elif index + 1 in starts:
-                        result.append(token("~", is_func=True))
+                        result.append(token("~", is_oper=True))
                     elif is_letter(next_t):
                         index += 1
-                        index = _sub_dummy(result, index, e, "-")
+                        t, index = _sub_dummy(index, e, "-")
+                        result.append(t)
                     else:
-                        result.append(token("~", is_func=True))
+                        result.append(token("~", is_oper=True))
+            elif t == "^":
+                if len(result) >= 1:
+                    prev = result[-1]
+                    if (prev.is_num or prev.is_dummy) and prev.sym[0] == "-":
+                        result[-1] = token("~", is_oper=True)
+                        result.append(token(prev.sym[1:], is_num=prev.is_num, is_dummy=prev.is_dummy))
+                result.append(token(t, is_oper=True))
             else:
                 result.append(token(t, is_oper=True))
         index += 1
@@ -347,34 +362,31 @@ def _gen_rand_exp(n, m, low, high, int_only):
                 return "("+_gen_rand_exp(n+1, m, low, high, int_only)+ rand + rand_b+")"
 
 
-def _sub_dummy(result, index, e, prev=""):
+def _sub_dummy(index, e, prev=""):
     d = prev
     while index < len(e) and is_letter(e[index]):
         d += e[index]
         index += 1
-    result.append(token(d, is_dummy=True))
     index -= 1
-    return index
+    return token(d, is_dummy=True), index
 
 
-def _sub_num(result, index, e, prev=""):
+def _sub_num(index, e, prev=""):
     d = prev
     while index < len(e) and (is_digit(e[index]) or e[index] == "."):
         d += e[index]
         index += 1
-    result.append(token(d, is_num=True))
     index -= 1
-    return index
+    return token(d, is_num=True), index
 
 
-def _sub_func(result, index, e, prev):
+def _sub_func(index, e, prev):
     d = prev
     while index < len(e) and is_digit(e[index]):
         d += e[index]
         index += 1
-    result.append(token(d, is_func=True))
     index -= 1
-    return index
+    return token(d, is_func=True), index
 
 
 def _func_regex():
@@ -403,3 +415,8 @@ def _match_regex(r, e):
         starts.append(m.start())
         ends.append(m.end())
     return starts, ends
+
+
+tks = tokenize("--2+1/-3^5")
+for t in tks:
+    print(t.sym)

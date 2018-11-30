@@ -301,8 +301,9 @@ def main():
 
 
 def test():
-    a = build("1^(2*2)/3")
+    a = build("-1^2")
     view(a)
+    print(evaluate(a.root))
 
 
 if __name__ == "__main__":
