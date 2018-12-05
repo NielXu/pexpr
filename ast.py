@@ -55,10 +55,18 @@ class astree():
                     self.cur.left = node(sym, self.cur)
                     self.cur = self.cur.left
                 else:
-                    while self.cur.left is not None or expr.is_unary(self.cur.sym):
+                    temp = self.cur
+                    while self.cur is not None and (self.cur.left is not None or expr.is_unary(self.cur.sym)):
                         self.cur = self.cur.parent
-                    self.cur.left = node(sym, self.cur)
-                    self.cur = self.cur.left
+                    if self.cur is None:
+                        n = node(sym)
+                        n.right = self.root
+                        self.root.parent = n
+                        self.root = n
+                        self.cur = temp
+                    else:
+                        self.cur.left = node(sym, self.cur)
+                        self.cur = self.cur.left
             else:
                 if self.cur.right is None:
                     self.cur.right = node(sym, self.cur)
@@ -303,9 +311,9 @@ def main():
 
 
 def test():
-    a = build("-1^2")
+    a = build("-1*--2^-2")
     view(a)
-    print(evaluate(a.root))
+    print(evaluate(a))
 
 
 if __name__ == "__main__":

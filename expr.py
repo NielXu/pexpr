@@ -39,7 +39,7 @@ opeartors_mapper = {
     "-": lambda x,y : x-y,
     "*": lambda x,y : x*y,
     "/": lambda x,y : x/y,
-    "^": lambda x,y : x**y,
+    "^": lambda x,y : x**y
 }
 symbols.update(opeartors_mapper)
 
