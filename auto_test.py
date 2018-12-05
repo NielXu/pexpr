@@ -45,7 +45,7 @@ def test_basic(n, accpet=0.0, hide=False, show_err=True, show_wrong=True, e_leng
             e = expr.rand_exp(e_length, e_min, e_max)
             if not hide:
                 print("Expression:", e)
-            at = ast.evaluate(ast.build(e).root)
+            at = ast.evaluate(ast.build(e))
             ex = eval(e.replace("^","**"))  # Using the evil
             err = ex - at
             if isinstance(at, complex):
