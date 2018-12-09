@@ -343,8 +343,7 @@ def test():
     for i in l:
         view(i)
         print(evaluate(i))
-    
 
 
 if __name__ == "__main__":
-    test()
+    main()
