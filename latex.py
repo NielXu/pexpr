@@ -1,9 +1,9 @@
 import ast
-from expr import is_number
+from expr import is_number, is_letter, is_func, is_unary
 
 
 latex_mapper = {
-    "/" : lambda x,y : "\\frac"+x+""+y+""
+    "/" : lambda x,y : "\\frac{"+x+"}{"+y+"}"
 }
 
 
@@ -18,14 +18,16 @@ def tolatex(a):
             return ""
         if n.sym in special_mapper:
             return special_mapper[n.sym](n.sym)
-        if is_number(n.sym):
-            return str(n.sym)
+        if is_number(n.sym) or (is_letter(n.sym) and not is_func(n.sym)):
+            return n.sym
         left = _eval(n.left)
         right = _eval(n.right)
         if n.sym in latex_mapper:
             return latex_mapper[n.sym](left, right)
+        elif is_unary(n.sym):
+            return n.sym + "(" + _eval(n.right) + ")"
         else:
-            return "{"+left + str(n.sym) + right+"}"
+            return "{"+left + n.sym + right+"}"
     return _eval(a.root)
 
 
