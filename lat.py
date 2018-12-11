@@ -3,7 +3,7 @@ import subprocess
 from expr import is_number, is_letter, is_func, is_unary
 
 
-header = r'''\documentclass{article}
+header = r'''\documentclass{standalone}
 \begin{document}
 '''
 
@@ -66,16 +66,25 @@ def topdf(source, des, rm=False):
         from os import listdir, remove
         from os.path import isfile, join, splitext, basename
         name = splitext(basename(source))[0]
-        print("FILENAME", name)
         for f in listdir(des):
             if isfile(join(des, f)):
                 fname, ext = splitext(f)
-                print("NAME", fname, "EXTENSION", ext)
                 if fname == name and ext != ".pdf":
                     remove(des+"\\"+f)
 
 
+def fastpdf(a, des, name, rm=False):
+    """Fastest way to generate a pdf from given AST and without
+    saving .tex file or anything. Calling this method will directly
+    generate the pdf file. If rm is enabled, all files except for
+    the pdf file will be removed after the compilation.
+    """
+    latex = tolat(a)
+    totex(latex, "\\"+name+".tex")
+    topdf("\\"+name+".tex", des, rm=rm)
+    import os
+    os.remove("\\"+name+".tex")
+
+
 # a = ast.build("2+pi*sin(x+2)/cos(x^(y+1))")
-# latex = tolat(a)
-# totex(latex, "F:\\github\\ast\\example.tex")
-# topdf("F:\\github\\ast\\example.tex", "F:\\github\\ast\\pdf", True)
+# fastpdf(a, "F:\\github\\ast\\pdf", "example", rm=True)
