@@ -1,5 +1,6 @@
 import ast
 import subprocess
+import os
 from expr import is_number, is_letter, is_func, is_unary
 
 
@@ -70,7 +71,7 @@ def topdf(source, des, rm=False):
             if isfile(join(des, f)):
                 fname, ext = splitext(f)
                 if fname == name and ext != ".pdf":
-                    remove(des+"\\"+f)
+                    remove(os.path.join(des, f))
 
 
 def fastpdf(a, des, name, rm=False):
@@ -80,11 +81,12 @@ def fastpdf(a, des, name, rm=False):
     the pdf file will be removed after the compilation.
     """
     latex = tolat(a)
-    totex(latex, "\\"+name+".tex")
-    topdf("\\"+name+".tex", des, rm=rm)
-    import os
-    os.remove("\\"+name+".tex")
+    totex(latex, os.path.join(os.path.curdir, name+".tex"))
+    topdf(os.path.join(os.path.curdir, name+".tex"), des, rm=rm)
+    p = os.path.join(os.path.curdir, name+".tex")
+    if os.path.isfile(p):
+        os.remove(p)
 
 
 # a = ast.build("2+pi*sin(x+2)/cos(x^(y+1))")
-# fastpdf(a, "F:\\github\\ast\\pdf", "example", rm=True)
+# fastpdf(a, "/Users/danielxu/Desktop/github/pexpr", "example", rm=True)
