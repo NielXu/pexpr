@@ -3,23 +3,109 @@ This module contains the abstract level of the syntax tree,
 it is real abstract syntax tree
 """
 import re
+import binarytree
+from queue import Queue
 
 
 class AbstractTree():
-    def __init__(self, associativity, root=None):
+    def __init__(self, connects_mapper, function_mapper,associativity, root=None):
         """
+        connects_mapper: A map of connectives
+
+        function_mapper: A map of functions
+
+
         associativity: The associativity of the expression, this
         is not the same as the one in connective. This defines the
         whole rule of building tree.
+
+        root=None: Root of the tree
         """
         self.root = root
         self.cur = None
+        self.associativity = associativity
+        self.connects_mapper = connects_mapper
+        self.function_mapper = function_mapper
     
-    def _left_append(self, n):
+    def copy(self):
+        a = AbstractTree(self.connects_mapper, self.function_mapper, self.associativity)
+        a.root = clone(self.root)
+        return a
+    
+    def bfs(self):
+        """
+        Travel the tree in `breadth first search` way, which is from left to
+        right and level by level. And return a list that contains the symbols.
+        """
+        q = Queue()
+        q.put(self.root)
+        s = []
+        while q.qsize() > 0:
+            node = q.get()
+            s.append(node.sym)
+            if node.left is not None:
+                q.put(node.left)
+            if node.right is not None:
+                q.put(node.right)
+        return s
+
+    def add(self, sym):
+        if self.associativity == 'left':
+            self._left_append(sym)
+        elif self.associativity == 'right':
+            self._right_append(sym)
+    
+    def _left_append(self, sym):
         pass
     
-    def _right_append(self, n):
-        pass
+    def _right_append(self, sym):
+        if self.root is None:
+            self.root = AbstractNode(sym)
+            self.cur = self.root
+        else:
+            if self.is_connect_func(sym) or self.is_func(sym):
+                if self.cur.right is None:
+                    self.cur.right = AbstractNode(sym, self.cur)
+                    self.cur = self.cur.right
+                elif self.cur.left is None and not self.is_unary(self.cur.sym):
+                    self.cur.left = AbstractNode(sym, self.cur)
+                    self.cur = self.cur.left
+                else:
+                    temp = self.cur
+                    while self.cur is not None and (self.cur.left is not None or self.is_unary(self.cur.sym)):
+                        self.cur = self.cur.parent
+                    if self.cur is None:
+                        n = AbstractNode(sym)
+                        n.right = self.root
+                        self.root.parent = n
+                        self.root = n
+                        self.cur = temp
+                    else:
+                        self.cur.left = AbstractNode(sym, self.cur)
+                        self.cur = self.cur.left
+            else:
+                if self.cur.right is None:
+                    self.cur.right = AbstractNode(sym, self.cur)
+                elif self.cur.left is None and not self.is_unary(self.cur.sym):
+                    self.cur.left = AbstractNode(sym, self.cur)
+                else:
+                    while self.cur.left is not None or self.is_unary(self.cur.sym):
+                        self.cur = self.cur.parent
+                    self.cur.left = AbstractNode(sym, self.cur)
+    
+    def is_unary(self, sym):
+        """
+        Return True if symbol means unary function, False otherwise
+        """
+        if sym not in self.function_mapper:
+            return False
+        return self.function_mapper[sym].is_unary
+    
+    def is_func(self, sym):
+        return sym in self.function_mapper
+    
+    def is_connect_func(self, sym):
+        return sym in self.connects_mapper or sym in self.function_mapper
 
 
 class AbstractToken():
@@ -141,9 +227,10 @@ class AbstractBuilder():
     """
     This class help users to build up the abstract trees
     """
-    def __init__(self, d=Domain()):
+    def __init__(self, associativity,d=Domain()):
         self.function_mapper = {}
         self.domain = d
+        self.associativity = associativity
         self.connects_mapper = {}
     
     def add_connect(self, con):
@@ -157,6 +244,12 @@ class AbstractBuilder():
         Build the Abstract tree by given expression, this method
         should be called when every connectives had been setup
         """
+        e = e.replace(" ", "")
+        p = self._post(e)
+        tree = AbstractTree(self.connects_mapper, self.function_mapper, self.associativity)
+        while len(p) > 0:
+            tree.add(p.pop())
+        return tree
     
     def _post(self, e):
         tokens = self._tokenize(e)
@@ -249,11 +342,73 @@ class AbstractBuilder():
         return starts, ends
 
 
+def _extend_tree(a, n, md):
+    if n is None:
+        return
+    if n.left is None and _at_level(n, a) != md:
+        n.left = AbstractNode(None)
+    if n.right is None and _at_level(n, a) != md:
+        n.right = AbstractNode(None)
+    _extend_tree(a, n.left, md)
+    _extend_tree(a, n.right, md)
+
+
+def _at_level(n, tree):
+    levels = []
+    _level_traversal_node(tree.root, 0, levels)
+    for index in range(len(levels)):
+        if n in levels[index]:
+            return index+1
+    return -1
+
+
+def _level_traversal_node(root, level, tlist):
+    if root is None:
+        return
+
+    if level >= len(tlist):
+        l = []
+        tlist.append(l)
+    tlist[level].append(root)
+    _level_traversal_node(root.left, level+1, tlist)
+    _level_traversal_node(root.right, level+1, tlist)
+
+
+def max_depth(n):
+    return _max_depth(n.root)
+
+def _max_depth(n):
+    if n is None:
+        return 0
+    left = _max_depth(n.left)
+    right = _max_depth(n.right)
+    return max(left, right) + 1
+
+def view(tree):
+    "View the AST on console"
+    a = tree.copy()
+    _extend_tree(a, a.root, max_depth(a))
+    print(binarytree.build(a.bfs()))
+
+
+def clone(n):
+    """
+    Start clonning from the given node and until all the nodes
+    are cloned
+    """
+    if n is None:
+        return  
+    node = n.copy()
+    node.left = clone(n.left)
+    node.right = clone(n.right)
+    return node
+
 
 fun = Function("abc", True, False, call=lambda x:x+2)
 mul = Connective("*", 2, 'right', False, True, call=lambda x,y:x*y)
-builder = AbstractBuilder()
+builder = AbstractBuilder('right')
 builder.add_connect(mul)
 builder.add_func(fun)
 
-print(builder._post("abc(3*2)"))
+a = builder.build("abc(2*3)")
+view(a)
