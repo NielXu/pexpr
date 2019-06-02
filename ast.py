@@ -21,9 +21,19 @@ class node():
         self.right = right
     
     def is_leaf(self):
+        """
+        Return True if this is a leaf(i.e. with no children),
+        False otherwise.
+        """
         return self.left is None and self.right is None
     
     def copy(self):
+        """
+        Make a shallow copy of this node, return a new node that
+        have the same members with this node. Please notice that
+        the new node's parent and children are not being copied,
+        only pointing to them directly.
+        """
         return node(self.sym, self.parent, self.left, self.right)
 
 
@@ -46,6 +56,13 @@ class astree():
         self.cur = None
     
     def add(self, sym):
+        """
+        Adding a new symbol(numbers, operators etc.) into the AST
+
+        @param
+        ---
+        `sym` Symbol in string
+        """
         if self.root is None:
             self.root = node(sym, None)
             self.cur = self.root
@@ -146,6 +163,13 @@ class astree():
         return li
     
     def copy(self):
+        """
+        Make a deep copy of this AST and return it.
+        The new AST will have exactly the same structure with
+        this AST, and all nodes are being copied as well. Therefore,
+        it is safe to modify the copied AST and it will not affect
+        this AST.
+        """
         a = astree()
         a.root = _clone(self.root)
         return a
@@ -153,10 +177,14 @@ class astree():
 
 def evaluate(a):
     """
-    Evaluate the result of a AST by a given AST. Please
+    Evaluate the result of the given AST. Please
     notice that not all AST can be evaluated. Only the
     tree that contains valid numbers or symbols can be
     evaluated.
+
+    @param
+    ---
+    `a` The AST
     """
     def _eval(node):
         if node is None:
@@ -183,14 +211,9 @@ def build(e):
     also support expressions in general, for example `a+b`.
     However, only math expressions can be evaluated.
 
-    Support operators:
-    ------
-    Basic:
-        + - * / ^ ( )
-    Functions:
-        sin, cos, tan, ln, log, abs
-    Special numbers:
-        pi, e
+    @param
+    ---
+    `e` The expression in string format
     """
     e = e.replace(" ", "")
     p = expr.postfix(e)
@@ -201,9 +224,14 @@ def build(e):
 
 
 def level_order(ast):
-    """Travel the given AST level by level and return a list
+    """
+    Travel the given AST level by level and return a list
     that contains list of nodes at each level, start from
     root to the most bottom.
+
+    @param
+    ---
+    `ast` The AST
     """
     levels = []
     _level_traversal(ast.root, 0, levels)
@@ -211,15 +239,51 @@ def level_order(ast):
 
 
 def max_depth(ast):
-    "Get the max depth of a given AST"
+    """
+    Get the max depth of a given AST.
+
+    @param
+    ---
+    `ast` The AST
+    """
     return _max_depth(ast.root)
 
 
 def view(ast):
-    "View the AST on console"
+    """
+    View the AST on console.
+
+    @param
+    ---
+    `ast` The AST
+    """
     a = ast.copy()
     _extend_tree(a, a.root, max_depth(a))
     print(binarytree.build(a.bfs()))
+
+
+def subtrees(a, roots=[], max_depth=None):
+    """
+    Get all possible subtrees from root, left and then right. It ends if
+    max depth is given and the depth is reached, otherwise, it will return all
+    subtrees. If roots are given, only the trees that with roots that are inside
+    the given list will be returned.
+
+    @param
+    ---
+    `a` The AST
+
+    `roots=[]` The roots that being used to match subtrees
+
+    `max_depth=None` The maximum depth that this function should reach
+    """
+    li = []
+    _subtree(a.root, 0, 100, li)
+    result = []
+    for tree in li:
+        if len(roots) == 0 or tree.root.sym in roots:
+            result.append(tree)
+    return result
 
 
 def _level_traversal(root, level, tlist):
@@ -235,23 +299,8 @@ def _level_traversal(root, level, tlist):
     _level_traversal(root.right, level+1, tlist)
 
 
-def subtrees(a, roots=[], max_depth=None):
-    """
-    Get all possible subtrees from root, left and then right. It ends if
-    max depth is given and the depth is reached, otherwise, it will return all
-    subtrees. If roots are given, only the trees that with roots that are inside
-    the given list will be returned.
-    """
-    li = []
-    _subtree(a.root, 0, 100, li)
-    result = []
-    for tree in li:
-        if len(roots) == 0 or tree.root.sym in roots:
-            result.append(tree)
-    return result
-
-
 def _subtree(root, depth, max_depth, li):
+    "Recursion of finding subtrees"
     if root is None or root.is_leaf() or depth == max_depth:
         return
     li.append(astree(root))
@@ -260,6 +309,7 @@ def _subtree(root, depth, max_depth, li):
 
 
 def _max_depth(n):
+    "Recursion of finding max depth of the tree"
     if n is None:
         return 0
     left = _max_depth(n.left)
@@ -268,6 +318,7 @@ def _max_depth(n):
 
 
 def _level_traversal_node(root, level, tlist):
+    "Recursion of doing level order traversal"
     if root is None:
         return
 
@@ -280,6 +331,7 @@ def _level_traversal_node(root, level, tlist):
 
 
 def _clone(n):
+    "Recursion that clone the AST, return the root node"
     if n is None:
         return  
     node = n.copy()
@@ -289,6 +341,7 @@ def _clone(n):
 
 
 def _extend_tree(a, n, md):
+    "Recursion that extends the AST in order to print on console"
     if n is None:
         return
     if n.left is None and _at_level(n, a) != md:
@@ -300,6 +353,7 @@ def _extend_tree(a, n, md):
 
 
 def _at_level(n, tree):
+    "Recursion that tells which level the node is at"
     levels = []
     _level_traversal_node(tree.root, 0, levels)
     for index in range(len(levels)):
@@ -309,6 +363,7 @@ def _at_level(n, tree):
 
 
 def main():
+    "Entrance of the script"
     import argparse
     parser = argparse.ArgumentParser(prog="ast",
         description="Generate and view Abstract-Syntax-Tree",
@@ -335,14 +390,6 @@ def main():
             print("Expression not evaluable: "+exp)
         if args.view:
             view(a)
-
-
-def test():
-    a = build("5*(2+3)")
-    l = subtrees(a, roots=[])
-    for i in l:
-        view(i)
-        print(evaluate(i))
 
 
 if __name__ == "__main__":
