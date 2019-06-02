@@ -83,6 +83,7 @@ function_mapper.update(unary_function_mapper)
 symbols.update(function_mapper)
 
 
+# Special numbers in math
 special_number = {
     "e":  math.e,
     "pi": math.pi
@@ -90,6 +91,7 @@ special_number = {
 
 
 class token():
+    "A single token in the math expression"
     def __init__(self, sym, is_num=False, is_func=False,
                     is_dummy=False, is_oper=False,
                     is_leftb=False, is_rightb=False):
@@ -116,10 +118,17 @@ class token():
 
 
 def has_precedence(a, b):
-    """Compare two opeartors a and b.
+    """
+    Compare two opeartors a and b.
     1. If b is right associativity and has lower precedence than a, return True
     2. If b is left associativity and has lower or same precedence with a, return True
     3. Otherwise, return False
+
+    @param
+    ---
+    `a` First operator
+
+    `b` Second operator
     """
     return ((_OPS[b].associativity == _RIGHT and
              _OPS[a].precedence > _OPS[b].precedence) or
@@ -128,8 +137,14 @@ def has_precedence(a, b):
 
 
 def postfix(e):
-    """Convert infix expression to postfix expression and return
-    a list that contains all the tokens in postfix order.
+    """
+    Convert infix expression to postfix expression and do
+    tokenization to the expression. Return a list of
+    tokens(in postfix) as result.
+
+    @param
+    ---
+    `e` The expression in string format
     """
     tokens = tokenize(e)
     q = []
@@ -160,16 +175,28 @@ def postfix(e):
     return [x.sym for x in q]
 
 
-def is_symbol(s):
-    """Return True if given str is a symbol, which means
-    it is in '+,-,*,/,^', False otherwise.
+def is_operator(s):
+    """
+    Return True if given str is a operator, which means
+    it is in the `operators_mapper`, False otherwise.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     return s in opeartors_mapper
 
 
 def is_evaluable(s):
-    """Return True if the given expression is evaluable,
-    False otherwise.
+    """
+    Return True if the given expression is evaluable,
+    False otherwise. This function check if there is
+    any dummy variable in the expression, please notice
+    that `pi`, `e` are treated as special numbers.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     tokens = tokenize(s)
     for token in tokens:
@@ -179,30 +206,50 @@ def is_evaluable(s):
 
 
 def is_unary(s):
-    """Return True if given str is a unary operator, which means
-    it is in 'sin, cos, tan, acos, asin, atan, log, ln, abs` and
-    so on, False otherwise.
+    """
+    Return True if given str is a unary function, which means
+    it is in `unary_function_mapper`, False otherwise.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     return s in unary_function_mapper
 
 
 def is_func(s):
-    """Return True if given str is a function operator, no matter
-    binary or unary, False otherwise.
+    """
+    Return True if given str is a function, which means
+    it is in `function_mapper`, does not matter if it is binary or unary,
+    False otherwise.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     return s in function_mapper
 
 
 def is_digit(s):
-    """Return True if given str is a digit, which means it
-    is in '0,1,2,3,4,5,6,7,8,9', False otherwise.
+    """
+    Return True if given str is a digit or a dot(in float),
+    which means it is in `0,1,2,3,4,5,6,7,8,9,.`, False otherwise.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     return s in "1234567890."
 
 
 def is_number(s):
-    """Return True if given str is a number, different from
-    `is_digit`, this function will check the complete string
+    """
+    Return True if given str is a number, either integer
+    or float, False otherwise.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     try:
         float(s)
@@ -212,23 +259,45 @@ def is_number(s):
 
 
 def is_letter(s):
-    """Return True if the given str is a alphabet, which
+    """
+    Return True if the given str is a alphabet, which
     means it is in 'a-z,A-Z', False otherwise.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     return s.isalpha()
 
 
 def is_special_number(s):
-    """Return True if the given str is a special number,
-    for example, pi, e, False otherwise.
+    """
+    Return True if the given str is a special number,
+    which means it is in `special_number`, False otherwise.
+
+    @param
+    ---
+    `s` A symbol in string
     """
     return s in special_number
 
 
 def rand_exp(n, low, high, basic_only=True, int_only=True):
-    """Generate a random expressions with random operators, math
-    functions and numbers. And the numbers in the expression are
-    restricted by the given n value
+    """
+    Generate a random math expression with random operators.
+
+    @param
+    ---
+    `n` Number of values in the expression, for example, `n=2`
+    will generate expressions with two values: `1+3`, `2-4`, ...
+
+    `low` The lower bound of the values in the expression
+
+    `high` The upper bound of the values in the expression
+
+    `basic_only=True` Only generate expression with basic operators
+
+    `int_only=True` Values in the expression are integers only
     """
     if basic_only:
         return _gen_rand_exp_oper(1, n, low, high, int_only)
@@ -237,10 +306,15 @@ def rand_exp(n, low, high, basic_only=True, int_only=True):
 
 
 def tokenize(e):
-    """Tokenize the expression and return a list that contains
+    """
+    Tokenize the expression and return a list that contains
     all the tokens from start to end. Please notice that ','
     will be ignored. And also, tokenizer will not recongize
     any wrong patterns or errors in the expression.
+
+    @param
+    ---
+    `e` The expression in string format
     """
     index = 0
     eindex = 0
@@ -263,7 +337,7 @@ def tokenize(e):
             result.append(token(t, is_leftb=True))
         elif t == ")":
             result.append(token(t, is_rightb=True))
-        elif is_symbol(t):
+        elif is_operator(t):
             if t == "-":
                 if index > 0:
                     prev, next_t = e[index-1], e[index+1]
