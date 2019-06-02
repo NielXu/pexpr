@@ -67,7 +67,7 @@ class astree():
             self.root = node(sym, None)
             self.cur = self.root
         else:
-            if expr.is_symbol(sym) or expr.is_func(sym):
+            if expr.is_operator(sym) or expr.is_func(sym):
                 if self.cur.right is None:
                     self.cur.right = node(sym, self.cur)
                     self.cur = self.cur.right
