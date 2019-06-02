@@ -22,9 +22,14 @@ special_mapper = {
 }
 
 
-def tolat(a):
-    """Convert a AST to latex format code, so that a pdf of the
-    given formula can be generated.
+def genlat(a):
+    """
+    Convert the given AST to latex code, the result will
+    return as string.
+
+    @param
+    ---
+    `a` The AST
     """
     def _eval(n):
         if n is None:
@@ -44,22 +49,41 @@ def tolat(a):
     return '$'+_eval(a.root)+'$'
 
 
-def totex(lat, loc):
-    """Convert a snippet of the latex code to a complete latex code by
+def gentex(lat, loc, name):
+    """
+    Convert a snippet of the latex code to a complete latex code by
     adding header and footer. And save the file as .tex format to the
-    given location, or create new file if it does not exist. If the
-    header and footer were not added, the compile phase will fail.
+    given location with given name. The generated file will be `{name}.tex`
+    If the file with the same name already exists, it will be overrided.
+
+    @param
+    ---
+    `lat` The latex code
+
+    `loc` Location of the file will be saved to, must be a directory
+
+    `name` The tex file name, extention does not require
     """
     code = header + lat + footer
-    with open(loc, "w+") as f:
+    with open(os.path.join(loc, name+".tex"), "w+") as f:
         f.write(code)
 
 
-def topdf(source, des, rm=False):
-    """Compile the .tex file from given source location 
-    and save the result to the given file destination.
-    If rm is enabled, all files except for the pdf file
-    will be removed after the compilation.
+def genpdf(source, des, rm=False):
+    """
+    Compile the .tex file from given source location 
+    and save the result to the given destination.
+    The result will be a folder contains the compiled
+    result, if rm is enabled, all other files will be
+    removed after compilation except for .pdf file.
+    
+    @param
+    ---
+    `source` The source file(.tex)
+
+    `des` The directory that the folder will be saved to
+
+    `rm=False` Remove files except for .pdf after compilation
     """
     command = ["pdflatex", "-output-directory", des, source]
     subprocess.call(command)
@@ -70,23 +94,31 @@ def topdf(source, des, rm=False):
         for f in listdir(des):
             if isfile(join(des, f)):
                 fname, ext = splitext(f)
-                if fname == name and ext != ".pdf":
-                    remove(os.path.join(des, f))
+                if fname == name:
+                    if ext == '.aux' or ext == '.log' or ext == ".tex":
+                        remove(os.path.join(des, f))
 
 
-def fastpdf(a, des, name, rm=False):
-    """Fastest way to generate a pdf from given AST and without
-    saving .tex file or anything. Calling this method will directly
-    generate the pdf file. If rm is enabled, all files except for
-    the pdf file will be removed after the compilation.
+def quickgen(a, des, name, op=False):
     """
-    latex = tolat(a)
-    totex(latex, os.path.join(os.path.curdir, name+".tex"))
-    topdf(os.path.join(os.path.curdir, name+".tex"), des, rm=rm)
-    p = os.path.join(os.path.curdir, name+".tex")
-    if os.path.isfile(p):
-        os.remove(p)
+    Quickly generate the PDF of the given AST and save
+    to the destination with the given name. The destination
+    must be a folder. The file name will be `{name}.pdf`.
+    This function is the combination of: `genlat`, `gentex`
+    and `genpdf`.
 
+    @param
+    ---
+    `a` The AST
 
-# a = ast.build("2+pi*sin(x+2)/cos(x^(y+1))")
-# fastpdf(a, "/Users/danielxu/Desktop/github/pexpr", "example", rm=True)
+    `des` The pdf file that will be saved to, must be a directory
+
+    `name` The name of the pdf file
+
+    `op=False` Open the file after compilation, use system default PDF viewer
+    """
+    temp_lat = genlat(a)
+    gentex(temp_lat, des, name)
+    genpdf(os.path.join(des, name+'.tex'), des, rm=True)
+    if op:
+        os.startfile(os.path.join(des, name+'.pdf'))
