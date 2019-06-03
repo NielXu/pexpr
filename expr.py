@@ -187,11 +187,29 @@ def is_operator(s):
     return s in opeartors_mapper
 
 
+def is_var(s):
+    """
+    Return True if the given str is a variable, which
+    means it is not in `symbols` and `special_number`
+    and made up with only alphabets.
+
+    @param
+    ---
+    `s` string
+    """
+    if s in symbols or s in special_number:
+        return False
+    for i in s:
+        if not is_letter(i):
+            return False
+    return True
+
+
 def is_evaluable(s):
     """
     Return True if the given expression is evaluable,
     False otherwise. This function check if there is
-    any dummy variable in the expression, please notice
+    any variables in the expression, please notice
     that `pi`, `e` are treated as special numbers.
 
     @param
