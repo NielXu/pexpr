@@ -6,6 +6,7 @@ math expression.
 
 
 from queue import Queue
+from excepts import *
 import expr
 import binarytree
 import sys
@@ -175,16 +176,19 @@ class astree():
         return a
 
 
-def evaluate(a):
+def evaluate(a, vars={}):
     """
-    Evaluate the result of the given AST. Please
-    notice that not all AST can be evaluated. Only the
-    tree that contains valid numbers or symbols can be
-    evaluated.
+    Evaluate the result of the given AST. If the vars
+    dict is given, the values for the variables will
+    be substituted when evaluating the result. If there
+    are variables in the tree but no corresponding values
+    are provided, it will raise `EvaluationException`.
 
     @param
     ---
     `a` The AST
+
+    `vars={}` The variables dict, for example: `{"x": 10, "y": 12}` 
     """
     def _eval(node):
         if node is None:
@@ -195,6 +199,11 @@ def evaluate(a):
             return float(node.sym)
         if expr.is_special_number(node.sym):
             return expr.special_number[node.sym]
+        if expr.is_var(node.sym):
+            if node.sym in vars:
+                return float(vars[node.sym])
+            else:
+                raise EvaluationException("Undefined variable: " + node.sym)
         left = _eval(node.left)
         right = _eval(node.right)
         return expr.symbols[node.sym](left, right)
