@@ -8,7 +8,7 @@ import heapq
 import random
 import numbers
 
-from binarytree.exceptions import (
+from .exceptions import (
     TreeHeightError,
     NodeValueError,
     NodeIndexError,

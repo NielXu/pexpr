@@ -6,10 +6,12 @@ math expression.
 
 
 from queue import Queue
-from excepts import *
-import expr
-import binarytree
+from .excepts import *
+from .expr import *
+from .lat import *
+from .binarytree import build as binarytreebuild
 import sys
+import os
 import textwrap
 
 
@@ -68,16 +70,16 @@ class astree():
             self.root = node(sym, None)
             self.cur = self.root
         else:
-            if expr.is_operator(sym) or expr.is_func(sym):
+            if is_operator(sym) or is_func(sym):
                 if self.cur.right is None:
                     self.cur.right = node(sym, self.cur)
                     self.cur = self.cur.right
-                elif self.cur.left is None and not expr.is_unary(self.cur.sym):
+                elif self.cur.left is None and not is_unary(self.cur.sym):
                     self.cur.left = node(sym, self.cur)
                     self.cur = self.cur.left
                 else:
                     temp = self.cur
-                    while self.cur is not None and (self.cur.left is not None or expr.is_unary(self.cur.sym)):
+                    while self.cur is not None and (self.cur.left is not None or is_unary(self.cur.sym)):
                         self.cur = self.cur.parent
                     if self.cur is None:
                         n = node(sym)
@@ -91,10 +93,10 @@ class astree():
             else:
                 if self.cur.right is None:
                     self.cur.right = node(sym, self.cur)
-                elif self.cur.left is None and not expr.is_unary(self.cur.sym):
+                elif self.cur.left is None and not is_unary(self.cur.sym):
                     self.cur.left = node(sym, self.cur)
                 else:
-                    while self.cur.left is not None or expr.is_unary(self.cur.sym):
+                    while self.cur.left is not None or is_unary(self.cur.sym):
                         self.cur = self.cur.parent
                     self.cur.left = node(sym, self.cur)
 
@@ -193,20 +195,20 @@ def evaluate(a, vars={}):
     def _eval(node):
         if node is None:
             return 0
-        if expr.is_unary(node.sym):
-            return expr.function_mapper[node.sym](_eval(node.right))
-        if expr.is_number(node.sym):
+        if is_unary(node.sym):
+            return function_mapper[node.sym](_eval(node.right))
+        if is_number(node.sym):
             return float(node.sym)
-        if expr.is_special_number(node.sym):
-            return expr.special_number[node.sym]
-        if expr.is_var(node.sym):
+        if is_special_number(node.sym):
+            return special_number[node.sym]
+        if is_var(node.sym):
             if node.sym in vars:
                 return float(vars[node.sym])
             else:
                 raise EvaluationException("Undefined variable: " + node.sym)
         left = _eval(node.left)
         right = _eval(node.right)
-        return expr.symbols[node.sym](left, right)
+        return symbols[node.sym](left, right)
     return _eval(a.root)
 
 
@@ -225,7 +227,7 @@ def build(e):
     `e` The expression in string format
     """
     e = e.replace(" ", "")
-    p = expr.postfix(e)
+    p = postfix(e)
     ast = astree()
     while len(p) > 0:
         ast.add(p.pop())
@@ -268,7 +270,7 @@ def view(ast):
     """
     a = ast.copy()
     _extend_tree(a, a.root, max_depth(a))
-    print(binarytree.build(a.bfs()))
+    print(binarytreebuild(a.bfs()))
 
 
 def subtrees(a, roots=[], max_depth=None):
@@ -397,17 +399,15 @@ def main():
     if args.eval is not None:
         exp = args.eval
         a = build(exp)
-        if expr.is_evaluable(exp):
+        if is_evaluable(exp):
             print(evaluate(a))
         else:
             print("Expression not evaluable: "+exp)
         if args.view:
             view(a)
         if args.pdf:
-            import os
-            import lat
             temp_path = os.path.dirname(os.path.realpath(__file__))
-            lat.quickgen(a, temp_path, "temp", op=True)
+            quickgen(a, temp_path, "temp", op=True)
 
 
 if __name__ == "__main__":

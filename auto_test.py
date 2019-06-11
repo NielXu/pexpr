@@ -1,8 +1,7 @@
 import time
 import sys
 import os
-import ast
-import expr
+from ast import ast, expr
 
 
 CASES = 1000

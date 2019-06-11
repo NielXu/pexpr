@@ -1,7 +1,7 @@
 import ast
 import subprocess
 import os
-from expr import is_number, is_letter, is_func, is_unary
+from .expr import is_number, is_letter, is_func, is_unary
 
 
 header = r'''\documentclass{standalone}
