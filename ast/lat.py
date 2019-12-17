@@ -1,6 +1,7 @@
 import ast
 import subprocess
 import os
+import sys
 from .expr import is_number, is_letter, is_func, is_unary
 
 
@@ -20,6 +21,21 @@ latex_mapper = {
 special_mapper = {
     "pi" : lambda x : "\\pi"
 }
+
+
+def open_file(f):
+    """
+    Open a file in platform independent way
+
+    @param
+    ---
+    `f` Filename
+    """
+    if sys.platform == "win32":
+        os.startfile(f)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, f])
 
 
 def genlat(a):
@@ -121,4 +137,4 @@ def quickgen(a, des, name, op=False):
     gentex(temp_lat, des, name)
     genpdf(os.path.join(des, name+'.tex'), des, rm=True)
     if op:
-        os.startfile(os.path.join(des, name+'.pdf'))
+        open_file(os.path.join(des, name+'.pdf'))
